@@ -5,6 +5,6 @@ exports.process = function(event) {
         case 'pong':
             return clientPinger.pong(event);
         case 'area':
-            return clientArea.draw(event);
+            return clientArea.newWorld(event);
     }
 };
