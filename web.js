@@ -1,15 +1,17 @@
-// web.js
-var express = require("express");
-var logfmt = require("logfmt");
-var app = express();
+var socketDispatcher = require('./socket_dispatcher');
+var socketInit = require('./socket_init'),
+    http = require('http'),
+    express = require('express'),
+    app = express(),
+    port = process.env.PORT || 5000;
 
-app.use(logfmt.requestLogger());
+app.use(express.static(__dirname + '/'));
 
-app.get('/', function(req, res) {
-  res.send('Hello World!');
-  });
+var server = http.createServer(app);
+server.listen(port);
+console.log('http server listening on %d', port);
 
-  var port = Number(process.env.PORT || 5000);
-  app.listen(port, function() {
-    console.log("Listening on " + port);
-    });
+var ws = socketInit.init(server);
+ws.on('connection', function(ws) {
+  socketDispatcher.dispatch(ws);
+});
