@@ -1,6 +1,10 @@
 var clientPinger = require('./client_pinger');
+var clientArea = require('./client_area');
 exports.process = function(event) {
-    if (event.data === 'pong') {
-        clientPinger.pong(event);
+    switch (window.JSON.parse(event.data).type) {
+        case 'pong':
+            return clientPinger.pong(event);
+        case 'area':
+            return clientArea.draw(event);
     }
 };

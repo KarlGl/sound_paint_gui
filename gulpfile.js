@@ -7,7 +7,6 @@ var paths = {
 };
 
 gulp.task('scripts', function() {
-    // console.log("running scripts 2")
     return gulp.src(paths.main)
         .pipe(browserify({
             insertGlobals: true,
@@ -18,7 +17,7 @@ gulp.task('scripts', function() {
 
 // Rerun the task when a file changes
 gulp.task('watch', function() {
-    // console.log("running watch")
+    // misleading: must restart gulp on gulpfile change.
     gulp.watch(paths.scripts.concat('./gulpfile.js'), ['scripts']);
 });
 

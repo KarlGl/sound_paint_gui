@@ -1,4 +1,4 @@
-exports.pingRate = 13000;
+exports.pingRate = 40000;
 
 exports.ping = function(ws) {
 	this.start = new Date();
@@ -6,8 +6,8 @@ exports.ping = function(ws) {
 };
 
 exports.pong = function(event) {
-	document.querySelector('#ping').innerHTML = new Date() - this.start + "ms";
-	        setTimeout(function() {
+	window.document.querySelector('#ping').innerHTML = new Date() - this.start + "ms";
+	        window.setTimeout(function() {
 	            this.ping(event.currentTarget);
 	        }.bind(this), this.pingRate);
 };

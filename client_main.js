@@ -4,6 +4,7 @@ var clientPinger = require('./client_pinger');
 var ws = clientInit.init();
 ws.onopen = function(event) {
 	clientPinger.ping(this);
+	ws.send('area');
 };
 ws.onmessage = function(event) {
     clientEvents.process(event);
