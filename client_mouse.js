@@ -7,10 +7,14 @@ exports.mousePos = {
 };
 exports.startListening = function() {
     $('html').mousemove(function(e) {
+        clientSoundPlayer.
         var raw = {
             x: e.pageX, // - domGet.worldOffset().left,
             y: e.pageY // - domGet.worldOffset().top
         };
+        // must be before.
+        clientSoundPlayer.moved(exports.mousePos, raw);
+        // must be after.
         exports.mousePos = raw;
     });
     $('html').mousedown(function(e) {
