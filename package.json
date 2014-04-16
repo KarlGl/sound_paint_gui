@@ -1,26 +1,22 @@
 {
-  "name": "nodejs",
+  "name": "audio_gui",
   "version": "0.0.0",
   "description": "",
-  "main": "web.js",
+  "main": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "BSD",
   "dependencies": {
-    "logfmt": "~0.21.0",
-    "express": "~3.4.8",
-    "http": "0.0.0",
-    "ws": "~0.4.31",
-    "browserify": "~3.30.1",
-    "gulp-jasmine": "^0.2.0"
+    "lodash": "^2.4.1"
   },
   "devDependencies": {
-    "gulp-browserify": "~0.4.4",
-    "gulp-util": "~2.2.14",
-    "gulp": "~3.5.2",
-    "gulp-concat": "~2.1.7",
-    "gulp-jasmine": "^0.2.0"
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-watch": "~0.4.0",
+    "grunt": "~0.4.1",
+    "grunt-coffeeify": "^0.1.3",
+    "sinon": "^1.9.1",
+    "jquery": "^2.1.0"
   }
 }

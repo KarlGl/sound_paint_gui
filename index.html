@@ -1,14 +1,20 @@
 <html>
 <head>
-    <script src="./jquery.js"></script>
-    <script src="./dist/client_main.js"></script>
+  <style>
+  #play-indicator {
+    display: inline-block;
+    width: 10px;
+    background: black;
+    height: 10px;
+    border: rgb(92, 231, 92) solid;
+    border-width: 0px 2px;
+    position: relative;
+    margin-left: -5px;
+  }
+  </style>
 </head>
-
 <body style="margin: 0px;">
-    <canvas id="area" width="300" height="300"></canvas>
-   	<div id="play-bar"></div>
-   	<div id="play-bar" style="width: 300px; height: 100px; background-color: grey;"></div>
-    <span id="ping-h">Ping: </span><span id="ping"></span>
+    <script src="./dist/main.js"></script>
 </body>
 
 </html>
