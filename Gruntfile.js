@@ -33,16 +33,16 @@ module.exports = function(grunt) {
         watch: {
             gruntfile: {
                 files: '<%= src.gruntfile.src %>',
-                tasks: ['coffeeify', 'nodeunit']
+                tasks: ['coffeeify']
             },
             lib: {
                 files: '<%= src.lib.src %>',
-                tasks: ['coffeeify', 'nodeunit']
+                tasks: ['coffeeify']
             },
-            test: {
-                files: '<%= src.test.src %>',
-                tasks: ['nodeunit']
-            },
+            // test: {
+                // files: '<%= src.test.src %>',
+                // tasks: ['nodeunit']
+            // },
         },
     });
 
@@ -52,6 +52,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Default task.
-    grunt.registerTask('default', ['coffeeify', 'nodeunit']);
+    grunt.registerTask('default', ['coffeeify']);
 
 };

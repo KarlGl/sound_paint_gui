@@ -1,17 +1,16 @@
 # 
 # Draws blocks in a world.
+# A block is a single drawn dot.
 #
 
 exports.init = (area, block)->
   area.context.fillRect(
     block.x * area.len
-    block.y * area.len
+    (1 - block.y) * area.len
     area.blockSize * area.len
     area.blockSize * area.len
   )
 
-# exports.makeBlock = (pos) ->
-#   clientArea.newBlock @genBlock(pos)  if pos.x < clientArea.areaSizes
 
 # exports.genBlock = (pos) ->
 #   x: pos.x / clientArea.areaSizes

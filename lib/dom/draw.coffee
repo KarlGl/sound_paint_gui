@@ -1,4 +1,10 @@
-$ = require '../../node_modules/jquery/dist/jquery'
+# 
+# A class who writes things to the DOM
+#
+
+$ = require 'jquery'
+ui = require 'jquery-ui';
+
 exports.draw = (child, parent)->
   if (!parent?)
     parent = $('body')
