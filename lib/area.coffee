@@ -4,7 +4,7 @@
 block = require './block.coffee'
 draw = require './dom/draw.coffee'
 
-exports.draw = (params)->
+exports.init = (params)->
   params.face = draw.draw('<canvas id="area"></canvas>')
   params.face.attr('width', params.len)
   params.face.attr('height', params.len)
@@ -13,5 +13,11 @@ exports.draw = (params)->
   params.units.forEach ((unit) ->
     block.init params, unit
   )
+
+  params.mouseCallbacks = {
+    mousemove: (x,y)->
+    mousedown: ->
+    mouseup: ->
+  }
 
   params

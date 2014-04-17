@@ -9,6 +9,7 @@ _ = require 'lodash'
 $ = require 'jquery'
 
 exports.init = (params)->
+  callbacks = params.callbacks
   down = false
   face = draw.draw('<div id="mouse-cursor"></div>')
       .css('position', 'absolute')
@@ -20,12 +21,15 @@ exports.init = (params)->
     mousemove: (event)-> 
       face.css('top', event.pageY + 'px')
       .css('left', event.pageX + 'px')
+      callbacks.mousemove(event.pageX, event.pageY)
     mousedown: (event)->
         down = true
         face.css('background-color', colors.active)
+        callbacks.mousedown()
     mouseup: (event)->
         down = false
         face.css('background-color', colors.mouse.inactive)
+        callbacks.mouseup()
     }, 
     (val, key)->
       $("html")[key] val

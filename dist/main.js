@@ -35,7 +35,7 @@
 
   draw = require('./dom/draw.coffee');
 
-  exports.draw = function(params) {
+  exports.init = function(params) {
     params.face = draw.draw('<canvas id="area"></canvas>');
     params.face.attr('width', params.len);
     params.face.attr('height', params.len);
@@ -43,6 +43,11 @@
     params.units.forEach((function(unit) {
       return block.init(params, unit);
     }));
+    params.mouseCallbacks = {
+      mousemove: function(x, y) {},
+      mousedown: function() {},
+      mouseup: function() {}
+    };
     return params;
   };
 
@@ -60,10 +65,11 @@
   mouseTracker = require('./mouse_tracker.coffee');
 
   exports.init = function(params) {
-    area.draw(params);
+    params = area.init(params);
     link.init(params);
     return mouseTracker.init({
-      size: 10
+      size: 10,
+      callbacks: params.mouseCallbacks
     });
   };
 
@@ -210,20 +216,24 @@
   $ = require('jquery');
 
   exports.init = function(params) {
-    var down, face;
+    var callbacks, down, face;
+    callbacks = params.callbacks;
     down = false;
     face = draw.draw('<div id="mouse-cursor"></div>').css('position', 'absolute').css('width', params.size + 'px').css('height', params.size + 'px').css('background-color', colors.mouse.inactive);
     return _.each({
       mousemove: function(event) {
-        return face.css('top', event.pageY + 'px').css('left', event.pageX + 'px');
+        face.css('top', event.pageY + 'px').css('left', event.pageX + 'px');
+        return callbacks.mousemove(event.pageX, event.pageY);
       },
       mousedown: function(event) {
         down = true;
-        return face.css('background-color', colors.active);
+        face.css('background-color', colors.active);
+        return callbacks.mousedown();
       },
       mouseup: function(event) {
         down = false;
-        return face.css('background-color', colors.mouse.inactive);
+        face.css('background-color', colors.mouse.inactive);
+        return callbacks.mouseup();
       }
     }, function(val, key) {
       return $("html")[key](val);

@@ -7,10 +7,12 @@ area = require './area.coffee'
 mouseTracker = require './mouse_tracker.coffee'
 
 exports.init = (params)->
-  area.draw(params)
+  params = area.init(params)
   link.init(params)
   mouseTracker.init
     size: 10
+    callbacks: params.mouseCallbacks
+
 
 exports.init({
   len: 300,
