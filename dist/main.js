@@ -9,7 +9,13 @@
 
 },{}],2:[function(require,module,exports){
 (function() {
-
+  exports.colors = {
+    inactive: 'rgb(209, 209, 209)',
+    active: 'green',
+    mouse: {
+      inactive: 'rgb(169, 169, 169)'
+    }
+  };
 
 }).call(this);
 
@@ -45,15 +51,20 @@
 
 },{"./block.coffee":1,"./dom/draw.coffee":5}],6:[function(require,module,exports){
 (function() {
-  var area, link;
+  var area, link, mouseTracker;
 
   link = require('./link.coffee');
 
   area = require('./area.coffee');
 
+  mouseTracker = require('./mouse_tracker.coffee');
+
   exports.init = function(params) {
     area.draw(params);
-    return link.init(params);
+    link.init(params);
+    return mouseTracker.init({
+      size: 10
+    });
   };
 
   exports.init({
@@ -79,11 +90,24 @@
 }).call(this);
 
 
-},{"./link.coffee":7,"./area.coffee":4}],8:[function(require,module,exports){
+},{"./link.coffee":7,"./area.coffee":4,"./mouse_tracker.coffee":8}],9:[function(require,module,exports){
 (function() {
   var btnLib;
 
   btnLib = require('../dom/btn.coffee');
+
+  exports.buttonList = [
+    {
+      name: 'isPlaying',
+      inner: 'play'
+    }, {
+      name: 'isLooping',
+      inner: 'loop'
+    }, {
+      name: 'isFreeplay',
+      inner: 'always playing'
+    }
+  ];
 
   exports.init = function(area) {
     var addStandardToggle, btnHash;
@@ -92,17 +116,15 @@
       return btnHash[params.name] = function(cb) {
         return btnLib.init({
           id: "" + params.name + "-btn",
-          inner: "" + params.name,
+          inner: "" + (params.inner || params.name),
           parent: area,
           key: params.name,
           cb: cb
         });
       };
     };
-    ['isPlaying', 'isLooping'].forEach(function(key) {
-      return addStandardToggle({
-        name: key
-      });
+    exports.buttonList.forEach(function(args) {
+      return addStandardToggle(args);
     });
     return btnHash;
   };
@@ -110,7 +132,7 @@
 }).call(this);
 
 
-},{"../dom/btn.coffee":9}],10:[function(require,module,exports){
+},{"../dom/btn.coffee":10}],11:[function(require,module,exports){
 (function() {
   var slider;
 
@@ -131,7 +153,7 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":11}],7:[function(require,module,exports){
+},{"../dom/slider.coffee":12}],7:[function(require,module,exports){
 (function() {
   var buttons, playSlider, _;
 
@@ -173,7 +195,45 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":10,"./standard-ui/buttons.coffee":8,"lodash":12}],12:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":11,"./standard-ui/buttons.coffee":9,"lodash":13}],8:[function(require,module,exports){
+(function() {
+  var $, colors, draw, _;
+
+  colors = require('./color_theme.coffee');
+
+  colors = colors.colors;
+
+  draw = require('./dom/draw.coffee');
+
+  _ = require('lodash');
+
+  $ = require('jquery');
+
+  exports.init = function(params) {
+    var down, face;
+    down = false;
+    face = draw.draw('<div id="mouse-cursor"></div>').css('position', 'absolute').css('width', params.size + 'px').css('height', params.size + 'px').css('background-color', colors.mouse.inactive);
+    return _.each({
+      mousemove: function(event) {
+        return face.css('top', event.pageY + 'px').css('left', event.pageX + 'px');
+      },
+      mousedown: function(event) {
+        down = true;
+        return face.css('background-color', colors.active);
+      },
+      mouseup: function(event) {
+        down = false;
+        return face.css('background-color', colors.mouse.inactive);
+      }
+    }, function(val, key) {
+      return $("html")[key](val);
+    });
+  };
+
+}).call(this);
+
+
+},{"./color_theme.coffee":2,"./dom/draw.coffee":5,"lodash":13,"jquery":14}],13:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -6961,103 +7021,7 @@
 }.call(this));
 
 })(window)
-},{}],9:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params) {
-    var btn, set, size;
-    btn = draw.draw("<div id=\"" + params.id + "\">" + params.inner + "</div>");
-    size = 30;
-    btn.css('width', size);
-    btn.css('height', size);
-    btn.addClass('btn');
-    set = function(v) {
-      var old;
-      if (params.parent[params.key] !== v) {
-        old = params.parent[params.key];
-        params.parent[params.key] = v;
-        params.cb(old);
-      }
-      if (params.parent[params.key]) {
-        btn.addClass('btn-on');
-        return btn.css('background-color', 'green');
-      } else {
-        btn.addClass('btn-off');
-        return btn.css('background-color', 'rgb(209, 209, 209)');
-      }
-    };
-    set(params.parent[params.key]);
-    return btn.click(function() {
-      return set(!params.parent[params.key]);
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":5,"jquery-ui":13}],5:[function(require,module,exports){
-(function() {
-  var $, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  exports.draw = function(child, parent) {
-    var c;
-    if (parent == null) {
-      parent = $('body');
-    }
-    c = $(child);
-    parent.append(c);
-    return c;
-  };
-
-  if (typeof window !== 'undefined') {
-    window.jq = $;
-  }
-
-}).call(this);
-
-
-},{"jquery":14,"jquery-ui":13}],11:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params) {
-    var element, percision;
-    element = draw.draw("<div id=\"" + params.elementId + "\"></div>");
-    if (params.css.width) {
-      element.css('width', params.css.width);
-    }
-    percision = 100000;
-    element.slider({
-      min: 0,
-      max: percision,
-      change: function(event, ui) {
-        var old;
-        old = params.parent[params.key];
-        params.parent[params.key] = ui.value / percision;
-        return params.cb(old);
-      }
-    });
-    element.slider('option', 'value', params.parent[params.key] * percision);
-    return element;
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":5,"jquery-ui":13}],14:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16171,7 +16135,106 @@ return jQuery;
 }));
 
 })()
-},{}],13:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
+(function() {
+  var colors, draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  colors = require('../color_theme.coffee');
+
+  colors = colors.colors;
+
+  exports.init = function(params) {
+    var btn, set, size;
+    btn = draw.draw("<div id=\"" + params.id + "\">" + params.inner + "</div>");
+    size = 30;
+    btn.css('height', size);
+    btn.addClass('btn');
+    set = function(v) {
+      var old;
+      if (params.parent[params.key] !== v) {
+        old = params.parent[params.key];
+        params.parent[params.key] = v;
+        params.cb(old);
+      }
+      if (params.parent[params.key]) {
+        btn.addClass('btn-on');
+        return btn.css('background-color', colors.active);
+      } else {
+        btn.addClass('btn-off');
+        return btn.css('background-color', colors.inactive);
+      }
+    };
+    set(params.parent[params.key]);
+    return btn.click(function() {
+      return set(!params.parent[params.key]);
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":5,"../color_theme.coffee":2,"jquery-ui":15}],5:[function(require,module,exports){
+(function() {
+  var $, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  exports.draw = function(child, parent) {
+    var c;
+    if (parent == null) {
+      parent = $('body');
+    }
+    c = $(child);
+    parent.append(c);
+    return c;
+  };
+
+  if (typeof window !== 'undefined') {
+    window.jq = $;
+  }
+
+}).call(this);
+
+
+},{"jquery":14,"jquery-ui":15}],12:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  exports.init = function(params) {
+    var element, percision;
+    element = draw.draw("<div id=\"" + params.elementId + "\"></div>");
+    if (params.css.width) {
+      element.css('width', params.css.width);
+    }
+    percision = 100000;
+    element.slider({
+      min: 0,
+      max: percision,
+      change: function(event, ui) {
+        var old;
+        old = params.parent[params.key];
+        params.parent[params.key] = ui.value / percision;
+        return params.cb(old);
+      }
+    });
+    element.slider('option', 'value', params.parent[params.key] * percision);
+    return element;
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":5,"jquery-ui":15}],15:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31179,5 +31242,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":14}]},{},[4,1,9,5,11,6,7,2,3,8,10])
+},{"jquery":14}]},{},[4,1,2,10,5,12,6,7,3,8,9,11])
 ;

@@ -13,4 +13,5 @@ exports.draw = (params)->
   params.units.forEach ((unit) ->
     block.init params, unit
   )
+
   params

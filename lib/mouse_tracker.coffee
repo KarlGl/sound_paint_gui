@@ -1,16 +1,31 @@
-# This tracks mouse position
+# This tracks mouse position.
 
-# exports.mousePos =
-#   x: 0
-#   y: 0
+colors = require './color_theme.coffee'
+colors = colors.colors
+draw = require './dom/draw.coffee'
+_ = require 'lodash'
 
-# exports.startListening = ->
-#   $("html").mousemove (e) ->
-#     raw =
-#       x: e.pageX # - domGet.worldOffset().left,
-#       y: e.pageY # - domGet.worldOffset().top
-    
-#     # must be after.
-#     exports.mousePos = raw
+# for event listening
+$ = require 'jquery'
 
-#     # notify others of mouse move.
+exports.init = (params)->
+  down = false
+  face = draw.draw('<div id="mouse-cursor"></div>')
+      .css('position', 'absolute')
+      .css('width', params.size + 'px')
+      .css('height', params.size + 'px')
+      .css('background-color', colors.mouse.inactive)
+
+  _.each {
+    mousemove: (event)-> 
+      face.css('top', event.pageY + 'px')
+      .css('left', event.pageX + 'px')
+    mousedown: (event)->
+        down = true
+        face.css('background-color', colors.active)
+    mouseup: (event)->
+        down = false
+        face.css('background-color', colors.mouse.inactive)
+    }, 
+    (val, key)->
+      $("html")[key] val

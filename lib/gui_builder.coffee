@@ -4,10 +4,13 @@
 #
 link = require './link.coffee'
 area = require './area.coffee'
+mouseTracker = require './mouse_tracker.coffee'
 
 exports.init = (params)->
   area.draw(params)
   link.init(params)
+  mouseTracker.init
+    size: 10
 
 exports.init({
   len: 300,
