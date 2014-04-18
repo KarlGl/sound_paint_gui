@@ -17,9 +17,9 @@ exports.init = (area)->
 exports.init({
   len: 300,
   blockSize: 0.02,
-  playSlider: 0.1,
-  bpm: 4,
-  isPlaying: true,
+  playSlider: 0.09,
+  bpm: 15,
+  isPlaying: false,
   isLooping: false,
   units: [
     # {x: 0.25, y: 0.1},

@@ -8,7 +8,12 @@ _ = require 'lodash'
 
 exports.addUnitCanditate = (area, unit)->
   # reject if duplicate
-  if (!positionLib.isIn(area.units, unit))
+  if (!positionLib.isIn(area.units, unit) &&
+    # don't allow them right on the very end
+    !(unit.x == 1) &&
+    !(unit.y == 0)
+  ) 
+    console.log("New Unit", unit)
     area.units.push unit
     block.init area, unit
 
