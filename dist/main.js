@@ -29,19 +29,30 @@
 
 },{}],4:[function(require,module,exports){
 (function() {
-  var draw;
+  var colors, draw;
 
   draw = require('./dom/draw.coffee');
+
+  colors = require('./color_theme.coffee');
+
+  colors = colors.colors;
 
   draw = draw.draw;
 
   exports.init = function(area) {
     var pos;
-    area.face = draw('<canvas id="area"></canvas>');
+    area.face = draw('<canvas class="area"></canvas>');
     area.face.attr('width', area.len);
     area.face.attr('height', area.len);
     area.context = area.face[0].getContext("2d");
     pos = area.face.position();
+    area.playIndicator = {
+      face: draw('<div class="play-indicator"></div>'),
+      setX: function(newVal) {
+        return this.face.css('left', (newVal * area.len) + pos.left).css('top', pos.top);
+      }
+    };
+    area.playIndicator.face.css('height', area.len).css('background-color', colors.active);
     area.box = {
       top: pos.top,
       left: pos.left,
@@ -54,29 +65,30 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":5}],6:[function(require,module,exports){
+},{"./dom/draw.coffee":5,"./color_theme.coffee":2}],6:[function(require,module,exports){
 (function() {
-  var area, link, mouseTracker;
+  var areaClass, link, mouseTracker;
 
   link = require('./link.coffee');
 
-  area = require('./area.coffee');
+  areaClass = require('./area.coffee');
 
   mouseTracker = require('./mouse_tracker.coffee');
 
-  exports.init = function(params) {
-    params = area.init(params);
-    link.init(params);
+  exports.init = function(area) {
+    area = areaClass.init(area);
+    link.init(area);
     return mouseTracker.init({
       size: 10,
-      callbacks: params.mouseCallbacks
+      callbacks: area.mouseCallbacks
     });
   };
 
   exports.init({
     len: 300,
     blockSize: 0.02,
-    upto: 0.1,
+    playSlider: 0.1,
+    bpm: 4,
     isPlaying: true,
     isLooping: false,
     units: []
@@ -94,7 +106,7 @@
   exports.buttonList = [
     {
       name: 'isPlaying',
-      inner: 'play'
+      inner: 'advance'
     }, {
       name: 'isLooping',
       inner: 'loop'
@@ -133,16 +145,13 @@
 
   slider = require('../dom/slider.coffee');
 
-  exports.init = function(area, cb) {
+  exports.init = function(area, callbacks) {
+    var key;
+    key = "playSlider";
     return slider.init({
-      elementId: 'play-bar',
       parent: area,
-      key: 'upto',
-      cb: cb,
-      css: {
-        width: area.len
-      }
-    });
+      key: key
+    }, callbacks);
   };
 
 }).call(this);
@@ -196,11 +205,13 @@
 
 },{"./block.coffee":1,"./area_draw.coffee":4,"./positions/positions.coffee":14,"lodash":15}],7:[function(require,module,exports){
 (function() {
-  var buttons, playSlider, _;
+  var buttons, playSlider, sliderWithMaxAndMin, _;
 
   playSlider = require('./standard-ui/play_slider.coffee');
 
   buttons = require('./standard-ui/buttons.coffee');
+
+  sliderWithMaxAndMin = require('./dom/slider_with_max.coffee');
 
   _ = require('lodash');
 
@@ -209,16 +220,14 @@
   };
 
   exports.init = function(area) {
-    var btnHash, callbacks, initButtonToSendMessage;
+    var btnHash, callbacks, initButtonToSendMessage, speedSlider;
     callbacks = exports.getGlobalCallbacks();
     btnHash = buttons.init(area);
-    playSlider.init(area, function(old) {
-      return callbacks.playSlider({
-        area: area,
-        old: old,
-        key: 'upto'
-      });
-    });
+    playSlider.init(area, callbacks);
+    speedSlider = sliderWithMaxAndMin.init({
+      parent: area,
+      key: 'bpm'
+    }, callbacks);
     initButtonToSendMessage = function(name) {
       return btnHash[name](function(old) {
         return callbacks[name]({
@@ -236,7 +245,7 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":12,"./standard-ui/buttons.coffee":10,"lodash":15}],9:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":12,"./standard-ui/buttons.coffee":10,"./dom/slider_with_max.coffee":16,"lodash":15}],9:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -305,7 +314,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":5,"lodash":15,"jquery":16}],15:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":5,"lodash":15,"jquery":17}],15:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7093,7 +7102,172 @@
 }.call(this));
 
 })(window)
-},{}],16:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+(function() {
+  var colors, draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  colors = require('../color_theme.coffee');
+
+  colors = colors.colors;
+
+  exports.init = function(params) {
+    var btn, set, size;
+    btn = draw.draw("<div id=\"" + params.id + "\">" + params.inner + "</div>");
+    size = 30;
+    btn.css('height', size);
+    btn.addClass('btn');
+    set = function(v) {
+      var old;
+      if (params.parent[params.key] !== v) {
+        old = params.parent[params.key];
+        params.parent[params.key] = v;
+        params.cb(old);
+      }
+      if (params.parent[params.key]) {
+        btn.addClass('btn-on');
+        return btn.css('background-color', colors.active);
+      } else {
+        btn.addClass('btn-off');
+        return btn.css('background-color', colors.inactive);
+      }
+    };
+    set(params.parent[params.key]);
+    return btn.click(function() {
+      return set(!params.parent[params.key]);
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":5,"../color_theme.coffee":2,"jquery-ui":18}],5:[function(require,module,exports){
+(function() {
+  var $, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  exports.draw = function(child, parent) {
+    var c;
+    if (parent == null) {
+      parent = $('body');
+    }
+    c = $(child);
+    parent.append(c);
+    return c;
+  };
+
+  if (typeof window !== 'undefined') {
+    window.jq = $;
+  }
+
+}).call(this);
+
+
+},{"jquery-ui":18,"jquery":17}],13:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    cb = function(old) {
+      return callbacks[params.key]({
+        area: area,
+        old: old,
+        key: params.key
+      });
+    };
+    element = draw.draw("<div id=\"" + params.key + "\"></div>");
+    element.css('width', params.parent.face.width());
+    percision = 100000;
+    element.slider({
+      min: 0,
+      max: overrides ? percision * overrides.max : percision,
+      change: function(event, ui) {
+        var old;
+        old = params.parent[params.key];
+        params.parent[params.key] = ui.value / percision;
+        return cb(old);
+      }
+    });
+    element.slider('option', 'value', params.parent[params.key] * percision);
+    return element;
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":5,"jquery-ui":18}],16:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":5,"./slider.coffee":13,"jquery-ui":18}],14:[function(require,module,exports){
+(function() {
+  var _;
+
+  _ = require('lodash');
+
+  exports.isInBox = function(pos, box) {
+    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
+      return exports.amountInBox(pos, box);
+    }
+  };
+
+  exports.snapToGrid = function(pos, gridCellSize) {
+    return {
+      x: gridCellSize * Math.round(pos.x / gridCellSize),
+      y: gridCellSize * Math.round(pos.y / gridCellSize)
+    };
+  };
+
+  exports.isIn = function(arr, pos) {
+    return _.some(arr, function(item) {
+      return _.isEqual(pos, item);
+    });
+  };
+
+  exports.amountInBox = function(pos, box) {
+    var inboxx, inboxy;
+    inboxx = pos.x - box.left;
+    inboxy = pos.y - box.top;
+    return {
+      x: inboxx / (box.right - box.left),
+      y: 1 - (inboxy / (box.bottom - box.top))
+    };
+  };
+
+  window.positionLib = exports;
+
+}).call(this);
+
+
+},{"lodash":15}],17:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16207,146 +16381,7 @@ return jQuery;
 }));
 
 })()
-},{}],11:[function(require,module,exports){
-(function() {
-  var colors, draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  colors = require('../color_theme.coffee');
-
-  colors = colors.colors;
-
-  exports.init = function(params) {
-    var btn, set, size;
-    btn = draw.draw("<div id=\"" + params.id + "\">" + params.inner + "</div>");
-    size = 30;
-    btn.css('height', size);
-    btn.addClass('btn');
-    set = function(v) {
-      var old;
-      if (params.parent[params.key] !== v) {
-        old = params.parent[params.key];
-        params.parent[params.key] = v;
-        params.cb(old);
-      }
-      if (params.parent[params.key]) {
-        btn.addClass('btn-on');
-        return btn.css('background-color', colors.active);
-      } else {
-        btn.addClass('btn-off');
-        return btn.css('background-color', colors.inactive);
-      }
-    };
-    set(params.parent[params.key]);
-    return btn.click(function() {
-      return set(!params.parent[params.key]);
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":5,"../color_theme.coffee":2,"jquery-ui":17}],5:[function(require,module,exports){
-(function() {
-  var $, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  exports.draw = function(child, parent) {
-    var c;
-    if (parent == null) {
-      parent = $('body');
-    }
-    c = $(child);
-    parent.append(c);
-    return c;
-  };
-
-  if (typeof window !== 'undefined') {
-    window.jq = $;
-  }
-
-}).call(this);
-
-
-},{"jquery-ui":17,"jquery":16}],13:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params) {
-    var element, percision;
-    element = draw.draw("<div id=\"" + params.elementId + "\"></div>");
-    if (params.css.width) {
-      element.css('width', params.css.width);
-    }
-    percision = 100000;
-    element.slider({
-      min: 0,
-      max: percision,
-      change: function(event, ui) {
-        var old;
-        old = params.parent[params.key];
-        params.parent[params.key] = ui.value / percision;
-        return params.cb(old);
-      }
-    });
-    element.slider('option', 'value', params.parent[params.key] * percision);
-    return element;
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":5,"jquery-ui":17}],14:[function(require,module,exports){
-(function() {
-  var _;
-
-  _ = require('lodash');
-
-  exports.isInBox = function(pos, box) {
-    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
-      return exports.amountInBox(pos, box);
-    }
-  };
-
-  exports.snapToGrid = function(pos, gridCellSize) {
-    return {
-      x: gridCellSize * Math.round(pos.x / gridCellSize),
-      y: gridCellSize * Math.round(pos.y / gridCellSize)
-    };
-  };
-
-  exports.isIn = function(arr, pos) {
-    return _.some(arr, function(item) {
-      return _.isEqual(pos, item);
-    });
-  };
-
-  exports.amountInBox = function(pos, box) {
-    var inboxx, inboxy;
-    inboxx = pos.x - box.left;
-    inboxy = pos.y - box.top;
-    return {
-      x: inboxx / (box.right - box.left),
-      y: 1 - (inboxy / (box.bottom - box.top))
-    };
-  };
-
-  window.positionLib = exports;
-
-}).call(this);
-
-
-},{"lodash":15}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31354,5 +31389,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":16}]},{},[8,4,1,2,11,5,13,6,7,3,9,14,10,12])
+},{"jquery":17}]},{},[8,4,1,2,11,5,13,16,6,7,3,9,14,10,12])
 ;

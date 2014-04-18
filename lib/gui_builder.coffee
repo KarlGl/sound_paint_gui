@@ -3,21 +3,22 @@
 # This builds the entire gui.
 #
 link = require './link.coffee'
-area = require './area.coffee'
+areaClass = require './area.coffee'
 mouseTracker = require './mouse_tracker.coffee'
 
-exports.init = (params)->
-  params = area.init(params)
-  link.init(params)
+exports.init = (area)->
+  area = areaClass.init(area)
+  link.init(area)
   mouseTracker.init
     size: 10
-    callbacks: params.mouseCallbacks
+    callbacks: area.mouseCallbacks
 
 
 exports.init({
   len: 300,
   blockSize: 0.02,
-  upto: 0.1,
+  playSlider: 0.1,
+  bpm: 4,
   isPlaying: true,
   isLooping: false,
   units: [

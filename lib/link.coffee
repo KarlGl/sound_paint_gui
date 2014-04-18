@@ -1,12 +1,13 @@
 # 
-# This inits our gui with all the callbacks set up from the other module.
+# This inits our gui with all the callbacks set up from the core module.
+# If these are not set (the module is not initialized) shit will fuck.
 #
 
 playSlider = require './standard-ui/play_slider.coffee'
 buttons = require './standard-ui/buttons.coffee'
+sliderWithMaxAndMin = require './dom/slider_with_max.coffee'
 _ = require 'lodash'
 
-# These callbacks have been kindly left for us by the frondend.
 exports.getGlobalCallbacks = ->
   window.callbacks
 
@@ -16,15 +17,13 @@ exports.init = (area)->
 
   btnHash = buttons.init(area)
 
-  playSlider.init(area, (old)->
-    # callback when play bar is slid.
-    callbacks.playSlider(
-      area: area
-      # callback when play bar needs to be updated without triggering any more cbs.
-      # cb: ()->
-      old: old
-      key: 'upto'
-    ))
+# SLIDERS
+  playSlider.init(area, callbacks)
+  speedSlider = sliderWithMaxAndMin.init(
+      parent: area,
+      key: 'bpm'
+    , callbacks)
+
 
   initButtonToSendMessage = (name)->
     btnHash[name] (old)->

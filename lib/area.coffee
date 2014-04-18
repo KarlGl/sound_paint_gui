@@ -22,7 +22,7 @@ exports.init = (area)->
           positionLib.snapToGrid(mouseState.new.pos, area.blockSize * area.len)
           area.box
         ))
-          # next time we play this new one will be there. 
+          # next time we play, this new unit will be there if created. 
           exports.addUnitCanditate(area, newUnitPos)
 
   area.mouseCallbacks = {

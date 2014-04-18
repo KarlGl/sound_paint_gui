@@ -4,7 +4,7 @@ btnLib = require '../dom/btn.coffee'
 
 exports.buttonList = [
   name: 'isPlaying'
-  inner: 'play'
+  inner: 'advance'
 ,
   name: 'isLooping'
   inner: 'loop'

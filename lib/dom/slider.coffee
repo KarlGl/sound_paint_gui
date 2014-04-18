@@ -5,22 +5,35 @@
 ui = require 'jquery-ui';
 draw = require './draw.coffee'
 
-exports.init = (params)->
+# normalize true if you want it to be between 0..1
+exports.init = (params, callbacks, overrides)->
 
-  element = draw.draw("<div id=\"#{params.elementId}\"></div>")
+  cb = (old)->
+        callbacks[params.key](
+          area: area
+          old: old
+          key: params.key
+        )
 
-  if (params.css.width)
-    element.css('width', params.css.width)
+  element = draw.draw("<div id=\"#{params.key}\"></div>")
+
+  element.css('width', params.parent.face.width())
 
   percision = 100000
   element.slider({
       min: 0,
-      max: percision,
+      max: 
+        if overrides
+          percision * overrides.max
+        else
+          percision
       change: ( event, ui )->
         old = params.parent[params.key]
-        params.parent[params.key] = ui.value / percision
+        params.parent[params.key] = 
+            ui.value / percision
+
         # need a way to set value without triggering this.
-        params.cb(old)
+        cb(old)
   })
   # do here so change will get called
   element.slider('option', 'value', params.parent[params.key] * percision)
