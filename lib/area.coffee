@@ -2,22 +2,36 @@
 # This draws a new world.
 #
 block = require './block.coffee'
-draw = require './dom/draw.coffee'
+areaDraw = require './area_draw.coffee'
+positionLib = require './positions/positions.coffee'
+_ = require 'lodash'
 
-exports.init = (params)->
-  params.face = draw.draw('<canvas id="area"></canvas>')
-  params.face.attr('width', params.len)
-  params.face.attr('height', params.len)
-  params.context = params.face[0].getContext("2d")
+exports.addUnitCanditate = (area, unit)->
+  # reject if duplicate
+  if (!positionLib.isIn(area.units, unit))
+    area.units.push unit
+    block.init area, unit
 
-  params.units.forEach ((unit) ->
-    block.init params, unit
-  )
+exports.init = (area)->
+  area = areaDraw.init(area)
 
-  params.mouseCallbacks = {
-    mousemove: (x,y)->
-    mousedown: ->
-    mouseup: ->
+  potentiallyMakeNewBlock = (mouseState)->
+    if (mouseState.new.down)
+      # for each area
+      if (newUnitPos = positionLib.isInBox(
+          positionLib.snapToGrid(mouseState.new.pos, area.blockSize * area.len)
+          area.box
+        ))
+          # next time we play this new one will be there. 
+          exports.addUnitCanditate(area, newUnitPos)
+
+  area.mouseCallbacks = {
+    mousemove: (mouseState)->
+      potentiallyMakeNewBlock(mouseState)
+    mousedown: (mouseState)->
+      potentiallyMakeNewBlock(mouseState)
+    mouseup: (mouseState)->
   }
 
-  params
+  window.area = area
+  area

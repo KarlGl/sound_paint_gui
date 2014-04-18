@@ -1,4 +1,7 @@
+#
 # This tracks mouse position.
+# Fires callbacks for mouse events.
+#
 
 colors = require './color_theme.coffee'
 colors = colors.colors
@@ -8,28 +11,52 @@ _ = require 'lodash'
 # for event listening
 $ = require 'jquery'
 
+
 exports.init = (params)->
   callbacks = params.callbacks
   down = false
-  face = draw.draw('<div id="mouse-cursor"></div>')
-      .css('position', 'absolute')
+  # face = draw.draw('<div id="mouse-cursor"></div>')
+  if (face?)
+    face.css('position', 'absolute')
       .css('width', params.size + 'px')
       .css('height', params.size + 'px')
       .css('background-color', colors.mouse.inactive)
 
+  defaultState = 
+    pos: 
+      x: null
+      y: null
+    down: false
+  states = 
+    new: _.cloneDeep(defaultState)
+    old: _.cloneDeep(defaultState)
+
+  copyNewToOld = ->
+    states.old = _.cloneDeep(states.new)
+
   _.each {
-    mousemove: (event)-> 
-      face.css('top', event.pageY + 'px')
-      .css('left', event.pageX + 'px')
-      callbacks.mousemove(event.pageX, event.pageY)
+    mousemove: (event)->
+      copyNewToOld()
+      # update x and y on new
+      states.new.pos.x = event.pageX
+      states.new.pos.y = event.pageY
+
+      if (face?)
+        face.css('top', event.pageY + 'px')
+          .css('left', event.pageX + 'px')
+      callbacks.mousemove(states)
     mousedown: (event)->
-        down = true
+      copyNewToOld()
+      states.new.down = true
+      if (face?)
         face.css('background-color', colors.active)
-        callbacks.mousedown()
+      callbacks.mousedown(states)
     mouseup: (event)->
-        down = false
+      copyNewToOld()
+      states.new.down = false
+      if (face?)
         face.css('background-color', colors.mouse.inactive)
-        callbacks.mouseup()
+      callbacks.mouseup(states)
     }, 
     (val, key)->
       $("html")[key] val
