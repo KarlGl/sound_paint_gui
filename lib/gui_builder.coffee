@@ -25,7 +25,7 @@ exports.init = (area)->
     x: (point)->
       area.context.fillRect(point, 0, 1, area.len)
     y: (point)->
-      area.context.fillRect(0, point, area.len, 1)
+      area.context.fillRect(0, (area.len - point), area.len, 1)
   ['x', 'y'].forEach (axis)->
     hash = area.grid[axis]
     if hash.isShow
@@ -64,22 +64,27 @@ resizer.setToMaximum(
       isSnap: true,
       isShow: true,
       get: (n)->
-        1/4 * n
+        1/16 * n
     } 
     y: {
       isSnap: true,
       isShow: true,
       get: (n)->
-        if (n==0)
-          0
-        else
-          1/4 * n
+        # a=Math.pow(2, (octave.to_f-1))
+        b=Math.pow(1.059463, n)
+        out = 27.5*b
+
+        out = ( out - 15 ) / 4985
+        # if (n==0)
+        #   0
+        # else
+        #   1/64 * (n*n)
     }  
   },
 
   units: [
-    {x: 0.25, y: 0.1},
-    {x: 0.5, y: 0.2},
+    # {x: 0.25, y: 0.1},
+    # {x: 0.5, y: 0.2},
     # {x: 0.75, y: 0.1},
   ],
   rootElement: rootElement
