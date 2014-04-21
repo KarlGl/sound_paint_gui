@@ -14,6 +14,25 @@ exports.snapToGrid = (pos, gridCellSize)->
   x: gridCellSize * Math.round(pos.x / gridCellSize)
   y: gridCellSize * Math.round(pos.y / gridCellSize)
 
+exports.snapToGridFromEquation = (pos, equation)->
+  getClosest = (n, closest=0)->
+    if (equation(n) < pos)
+      getClosest(n + 1, equation(n))
+    else
+      [n, closest]
+
+  # the closest but always taking the lower. [1] is the result.
+  trunc = getClosest(0)
+
+  # Test if one higher is closer.
+  oneOver = equation(trunc[0])
+
+  if oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)
+    oneOver
+  else
+    trunc[1]
+
+
 # is a position in an array of them
 exports.isIn = (arr, pos)->
   _.some(arr, (item)->

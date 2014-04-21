@@ -26,11 +26,20 @@ exports.init = (area)->
 exports.mouseInit = (area)->
   potentiallyMakeNewBlock = (mouseState)->
     if (mouseState.new.down)
+      snappedPoint = positionLib.snapToGrid(mouseState.new.pos, area.blockSize * area.len)
+
       # for each area
-      if (newUnitPos = positionLib.isInBox(
-          positionLib.snapToGrid(mouseState.new.pos, area.blockSize * area.len)
+      # back to a 0 to 1 position
+      if newUnitPos = positionLib.isInBox(
+          snappedPoint
           area.box
-        ))
+          )
+
+        ['x', 'y'].forEach (axis)->
+          gridHash = area.grid[axis]
+          if (gridHash.isSnap)
+            newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get)
+
           # next time we play, this new unit will be there if created. 
           exports.addUnitCanditate(area, newUnitPos)
 

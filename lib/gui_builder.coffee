@@ -32,10 +32,10 @@ exports.init = (area)->
       area.context.fillStyle = colors.inactive
       fill = (n)->
         # side effects in if statement
-        if (pos = hash.get(area, n)) < 1
+        if (pos = hash.get(n)) < 1
           fillFuncs[axis](pos * area.len)
           fill(n+1)
-      fill(1)
+      fill(0)
 
 
   resizerEl = link.init(area)
@@ -61,13 +61,15 @@ resizer.setToMaximum(
 
   grid: {
     x: {
+      isSnap: true,
       isShow: true,
-      get: (area, n)->
+      get: (n)->
         1/4 * n
     } 
     y: {
+      isSnap: true,
       isShow: true,
-      get: (area, n)->
+      get: (n)->
         if (n==0)
           0
         else

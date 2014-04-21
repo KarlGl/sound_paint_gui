@@ -169,10 +169,18 @@
   exports.mouseInit = function(area) {
     var potentiallyMakeNewBlock;
     potentiallyMakeNewBlock = function(mouseState) {
-      var newUnitPos;
+      var newUnitPos, snappedPoint;
       if (mouseState["new"].down) {
-        if ((newUnitPos = positionLib.isInBox(positionLib.snapToGrid(mouseState["new"].pos, area.blockSize * area.len), area.box))) {
-          return exports.addUnitCanditate(area, newUnitPos);
+        snappedPoint = positionLib.snapToGrid(mouseState["new"].pos, area.blockSize * area.len);
+        if (newUnitPos = positionLib.isInBox(snappedPoint, area.box)) {
+          return ['x', 'y'].forEach(function(axis) {
+            var gridHash;
+            gridHash = area.grid[axis];
+            if (gridHash.isSnap) {
+              newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
+            }
+            return exports.addUnitCanditate(area, newUnitPos);
+          });
         }
       }
     };
@@ -232,12 +240,12 @@
         area.context.fillStyle = colors.inactive;
         fill = function(n) {
           var pos;
-          if ((pos = hash.get(area, n)) < 1) {
+          if ((pos = hash.get(n)) < 1) {
             fillFuncs[axis](pos * area.len);
             return fill(n + 1);
           }
         };
-        return fill(1);
+        return fill(0);
       }
     });
     resizerEl = link.init(area);
@@ -263,14 +271,16 @@
     isLooping: false,
     grid: {
       x: {
+        isSnap: true,
         isShow: true,
-        get: function(area, n) {
+        get: function(n) {
           return 1 / 4 * n;
         }
       },
       y: {
+        isSnap: true,
         isShow: true,
-        get: function(area, n) {
+        get: function(n) {
           if (n === 0) {
             return 0;
           } else {
@@ -16459,6 +16469,27 @@ return jQuery;
     };
   };
 
+  exports.snapToGridFromEquation = function(pos, equation) {
+    var getClosest, oneOver, trunc;
+    getClosest = function(n, closest) {
+      if (closest == null) {
+        closest = 0;
+      }
+      if (equation(n) < pos) {
+        return getClosest(n + 1, equation(n));
+      } else {
+        return [n, closest];
+      }
+    };
+    trunc = getClosest(0);
+    oneOver = equation(trunc[0]);
+    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
+      return oneOver;
+    } else {
+      return trunc[1];
+    }
+  };
+
   exports.isIn = function(arr, pos) {
     return _.some(arr, function(item) {
       return _.isEqual(pos, item);
@@ -16541,7 +16572,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":4,"../gui_builder.coffee":13,"jquery-ui":19,"jquery":17}],19:[function(require,module,exports){
+},{"../gui_builder.coffee":13,"../dom/draw.coffee":4,"jquery":17,"jquery-ui":19}],19:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31549,5 +31580,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":17}]},{},[10,3,5,1,7,4,9,18,13,14,2,15,11,6,8,16])
+},{"jquery":17}]},{},[10,3,1,7,5,4,9,18,13,14,2,15,11,6,8,16])
 ;
