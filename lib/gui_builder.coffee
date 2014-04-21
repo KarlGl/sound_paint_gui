@@ -8,6 +8,8 @@ draw = require './dom/draw.coffee'
 mouseTracker = require './mouse_tracker.coffee'
 resizer = require './standard-ui/resizer.coffee'
 $ = require 'jquery'
+colors = require './color_theme.coffee'
+colors = colors.colors
 
 exports.init = (area)->
   # potentially remove old container.
@@ -15,9 +17,27 @@ exports.init = (area)->
     area.container.remove()
 
   area.container = draw.draw("<div class=\"area-ct\"></div>")
-  area.container.parentContainer = 
 
   area = areaClass.init(area)
+
+  # Draw grids.
+  fillFuncs = 
+    x: (point)->
+      area.context.fillRect(point, 0, 1, area.len)
+    y: (point)->
+      area.context.fillRect(0, point, area.len, 1)
+  ['x', 'y'].forEach (axis)->
+    hash = area.grid[axis]
+    if hash.isShow
+      area.context.fillStyle = colors.inactive
+      fill = (n)->
+        # side effects in if statement
+        if (pos = hash.get(area, n)) < 1
+          fillFuncs[axis](pos * area.len)
+          fill(n+1)
+      fill(1)
+
+
   resizerEl = link.init(area)
   mouseTracker.init
     size: 10
@@ -38,6 +58,23 @@ resizer.setToMaximum(
   bpm: 15,
   isPlaying: false,
   isLooping: false,
+
+  grid: {
+    x: {
+      isShow: true,
+      get: (area, n)->
+        1/4 * n
+    } 
+    y: {
+      isShow: true,
+      get: (area, n)->
+        if (n==0)
+          0
+        else
+          1/4 * n
+    }  
+  },
+
   units: [
     {x: 0.25, y: 0.1},
     {x: 0.5, y: 0.2},

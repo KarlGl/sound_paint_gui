@@ -1,17 +1,9 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  exports.init = function(area, block) {
-    return area.context.fillRect(block.x * area.len, (1 - block.y) * area.len, area.blockSize * area.len, area.blockSize * area.len);
-  };
-
-}).call(this);
-
-
-},{}],2:[function(require,module,exports){
-(function() {
   exports.colors = {
     inactive: 'rgb(209, 209, 209)',
     active: 'green',
+    units: 'rgb(0, 0, 0)',
     mouse: {
       inactive: 'rgb(169, 169, 169)'
     }
@@ -20,14 +12,14 @@
 }).call(this);
 
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 (function() {
 
 
 }).call(this);
 
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function() {
   var block, colors, draw;
 
@@ -74,7 +66,23 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":5,"./color_theme.coffee":2,"./block.coffee":1}],6:[function(require,module,exports){
+},{"./dom/draw.coffee":4,"./color_theme.coffee":1,"./block.coffee":5}],5:[function(require,module,exports){
+(function() {
+  var colors;
+
+  colors = require('./color_theme.coffee');
+
+  colors = colors.colors;
+
+  exports.init = function(area, block) {
+    area.context.fillStyle = colors.units;
+    return area.context.fillRect(block.x * area.len, (1 - block.y) * area.len, area.blockSize * area.len, area.blockSize * area.len);
+  };
+
+}).call(this);
+
+
+},{"./color_theme.coffee":1}],6:[function(require,module,exports){
 (function() {
   var btnLib;
 
@@ -182,9 +190,9 @@
 }).call(this);
 
 
-},{"./block.coffee":1,"./area_draw.coffee":4,"./positions/positions.coffee":11,"lodash":12}],13:[function(require,module,exports){
+},{"./block.coffee":5,"./area_draw.coffee":3,"./positions/positions.coffee":11,"lodash":12}],13:[function(require,module,exports){
 (function() {
-  var $, areaClass, draw, link, mouseTracker, resizer, rootElement;
+  var $, areaClass, colors, draw, link, mouseTracker, resizer, rootElement;
 
   link = require('./link.coffee');
 
@@ -198,13 +206,40 @@
 
   $ = require('jquery');
 
+  colors = require('./color_theme.coffee');
+
+  colors = colors.colors;
+
   exports.init = function(area) {
-    var resizerEl;
+    var fillFuncs, resizerEl;
     if ((area.container != null)) {
       area.container.remove();
     }
     area.container = draw.draw("<div class=\"area-ct\"></div>");
-    area.container.parentContainer = area = areaClass.init(area);
+    area = areaClass.init(area);
+    fillFuncs = {
+      x: function(point) {
+        return area.context.fillRect(point, 0, 1, area.len);
+      },
+      y: function(point) {
+        return area.context.fillRect(0, point, area.len, 1);
+      }
+    };
+    ['x', 'y'].forEach(function(axis) {
+      var fill, hash;
+      hash = area.grid[axis];
+      if (hash.isShow) {
+        area.context.fillStyle = colors.inactive;
+        fill = function(n) {
+          var pos;
+          if ((pos = hash.get(area, n)) < 1) {
+            fillFuncs[axis](pos * area.len);
+            return fill(n + 1);
+          }
+        };
+        return fill(1);
+      }
+    });
     resizerEl = link.init(area);
     mouseTracker.init({
       size: 10,
@@ -226,6 +261,24 @@
     bpm: 15,
     isPlaying: false,
     isLooping: false,
+    grid: {
+      x: {
+        isShow: true,
+        get: function(area, n) {
+          return 1 / 4 * n;
+        }
+      },
+      y: {
+        isShow: true,
+        get: function(area, n) {
+          if (n === 0) {
+            return 0;
+          } else {
+            return 1 / 4 * n;
+          }
+        }
+      }
+    },
     units: [
       {
         x: 0.25,
@@ -241,7 +294,7 @@
 }).call(this);
 
 
-},{"./link.coffee":14,"./area.coffee":10,"./dom/draw.coffee":5,"./mouse_tracker.coffee":15,"./standard-ui/resizer.coffee":16,"jquery":17}],14:[function(require,module,exports){
+},{"./link.coffee":14,"./area.coffee":10,"./dom/draw.coffee":4,"./mouse_tracker.coffee":15,"./standard-ui/resizer.coffee":16,"./color_theme.coffee":1,"jquery":17}],14:[function(require,module,exports){
 (function() {
   var buttons, playSlider, resizer, sliderWithMaxAndMin, _;
 
@@ -360,7 +413,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":5,"lodash":12,"jquery":17}],12:[function(require,module,exports){
+},{"./color_theme.coffee":1,"./dom/draw.coffee":4,"lodash":12,"jquery":17}],12:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -16304,7 +16357,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":5,"../color_theme.coffee":2,"jquery-ui":19}],5:[function(require,module,exports){
+},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],4:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16366,7 +16419,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":5,"jquery-ui":19}],18:[function(require,module,exports){
+},{"./draw.coffee":4,"jquery-ui":19}],18:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16387,7 +16440,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":5,"./slider.coffee":9,"jquery-ui":19}],11:[function(require,module,exports){
+},{"./draw.coffee":4,"./slider.coffee":9,"jquery-ui":19}],11:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16488,7 +16541,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":5,"../gui_builder.coffee":13,"jquery":17,"jquery-ui":19}],19:[function(require,module,exports){
+},{"../dom/draw.coffee":4,"../gui_builder.coffee":13,"jquery-ui":19,"jquery":17}],19:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31496,5 +31549,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":17}]},{},[10,4,1,2,7,5,9,18,13,14,3,15,11,6,8,16])
+},{"jquery":17}]},{},[10,3,5,1,7,4,9,18,13,14,2,15,11,6,8,16])
 ;
