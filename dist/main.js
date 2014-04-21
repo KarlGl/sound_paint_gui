@@ -173,14 +173,14 @@
       if (mouseState["new"].down) {
         snappedPoint = positionLib.snapToGrid(mouseState["new"].pos, area.blockSize * area.len);
         if (newUnitPos = positionLib.isInBox(snappedPoint, area.box)) {
-          return ['x', 'y'].forEach(function(axis) {
+          ['x', 'y'].forEach(function(axis) {
             var gridHash;
             gridHash = area.grid[axis];
             if (gridHash.isSnap) {
-              newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
+              return newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
             }
-            return exports.addUnitCanditate(area, newUnitPos);
           });
+          return exports.addUnitCanditate(area, newUnitPos);
         }
       }
     };
@@ -16572,7 +16572,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../gui_builder.coffee":13,"../dom/draw.coffee":4,"jquery":17,"jquery-ui":19}],19:[function(require,module,exports){
+},{"../dom/draw.coffee":4,"../gui_builder.coffee":13,"jquery":17,"jquery-ui":19}],19:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31580,5 +31580,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":17}]},{},[10,3,1,7,5,4,9,18,13,14,2,15,11,6,8,16])
+},{"jquery":17}]},{},[10,3,5,1,7,4,9,18,13,14,2,15,11,6,8,16])
 ;

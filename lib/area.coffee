@@ -40,8 +40,8 @@ exports.mouseInit = (area)->
           if (gridHash.isSnap)
             newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get)
 
-          # next time we play, this new unit will be there if created. 
-          exports.addUnitCanditate(area, newUnitPos)
+        # next time we play, this new unit will be there if created. 
+        exports.addUnitCanditate(area, newUnitPos)
 
   area.mouseCallbacks = {
     mousemove: (mouseState)->
