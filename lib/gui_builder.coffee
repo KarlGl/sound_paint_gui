@@ -6,6 +6,7 @@ link = require './link.coffee'
 areaClass = require './area.coffee'
 draw = require './dom/draw.coffee'
 mouseTracker = require './mouse_tracker.coffee'
+resizer = require './standard-ui/resizer.coffee'
 $ = require 'jquery'
 
 exports.init = (area)->
@@ -17,17 +18,20 @@ exports.init = (area)->
   area.container.parentContainer = 
 
   area = areaClass.init(area)
-  link.init(area)
+  resizerEl = link.init(area)
   mouseTracker.init
     size: 10
     callbacks: area.mouseCallbacks
+  resizerEl
 
 # if $('.sound-paint').length
 rootElement = draw.draw("<div class=\"sound-paint\"></div>", $('body'))
 rootElement.css('width', '100%')
 rootElement.css('height', '100%')
 
-exports.init({
+
+resizer.setToMaximum(
+ exports.init({
   len: 300,
   blockSize: 0.02,
   playSlider: 0.09,
@@ -41,6 +45,7 @@ exports.init({
   ],
   rootElement: rootElement
   })
+)
 
 # # Get the bounding box of a block.
 # exports.getBlockBB = (block) ->

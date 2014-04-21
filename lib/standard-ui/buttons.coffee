@@ -9,8 +9,9 @@ exports.buttonList = [
   name: 'isLooping'
   inner: 'loop'
 ,
-  name: 'isFreeplay'
-  inner: 'always playing'
+  # TO IMPL
+  # name: 'isFreeplay'
+  # inner: 'always playing'
 ]
 
 

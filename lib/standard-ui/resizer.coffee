@@ -4,12 +4,28 @@ ui = require 'jquery-ui';
 draw = require '../dom/draw.coffee'
 guiInit = require '../gui_builder.coffee'
 
+# Size of the controls to add onto canvas size
+BOTTOM_CONTROL_SIZE = 100
+RIGHT_CONTROL_SIZE = 10
+
+exports.setToMaximum = (element)->
+  largest = Math.min((root = element.params.parent.rootElement).width() - RIGHT_CONTROL_SIZE, 
+    (root.height() - BOTTOM_CONTROL_SIZE))
+
+  # stop infinate loop
+  if (element.params.parent['len'] != largest)
+    element.val(largest)
+    exports.dealWithChange(element, largest)
+
+exports.dealWithChange = (element, val)->
+    old = element.params.parent['len']
+    element.params.parent['len'] = parseInt(val)
+    element.params.cb(old)
+    guiInit.init(element.params.parent)
+
 # 
 # parent must respond to the redraw method
 exports.init = (params)->
-
-  # Size of the bottom controls
-  BOTTOM_CONTROL_SIZE = 100
 
   element = draw.draw("<input type=\"number\" class=\"resize\">", params.parent.container)
 
@@ -18,34 +34,19 @@ exports.init = (params)->
   element.val(params.parent['len'])
   element.css('width', 46)
 
-  cb = (old)->
-    params.callbacks[params.key](
-      area: params.parent
-      old: old
-      key: params.key
-    )
+  element.params = 
+    parent: params.parent
+    cb: (old)->
+      params.callbacks[params.key](
+        area: params.parent
+        old: old
+        key: params.key
+      )
 
-  dealWithChange = (val)->
-    old = params.parent['len']
-    params.parent['len'] = parseInt(val)
-    cb(old)
-    guiInit.init(params.parent)
-
-  setToMaximum = ->
-    largest = Math.min((root = params.parent.rootElement).width(), 
-      (root.height() - BOTTOM_CONTROL_SIZE))
-
-    # stop infinate loop
-    if (params.parent['len'] != largest)
-      element.val(largest)
-      dealWithChange(largest)
-    
   elementMaximize.click ->
-    setToMaximum(event.target.value)
+    exports.setToMaximum(element)
 
   element.change (event)->
-    dealWithChange()
-
-  setToMaximum()
+    exports.dealWithChange(element, event.target.value)
 
   element

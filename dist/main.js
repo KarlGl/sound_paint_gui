@@ -87,9 +87,6 @@
     }, {
       name: 'isLooping',
       inner: 'loop'
-    }, {
-      name: 'isFreeplay',
-      inner: 'always playing'
     }
   ];
 
@@ -187,7 +184,7 @@
 
 },{"./block.coffee":1,"./area_draw.coffee":4,"./positions/positions.coffee":11,"lodash":12}],13:[function(require,module,exports){
 (function() {
-  var $, areaClass, draw, link, mouseTracker, rootElement;
+  var $, areaClass, draw, link, mouseTracker, resizer, rootElement;
 
   link = require('./link.coffee');
 
@@ -197,19 +194,23 @@
 
   mouseTracker = require('./mouse_tracker.coffee');
 
+  resizer = require('./standard-ui/resizer.coffee');
+
   $ = require('jquery');
 
   exports.init = function(area) {
+    var resizerEl;
     if ((area.container != null)) {
       area.container.remove();
     }
     area.container = draw.draw("<div class=\"area-ct\"></div>");
     area.container.parentContainer = area = areaClass.init(area);
-    link.init(area);
-    return mouseTracker.init({
+    resizerEl = link.init(area);
+    mouseTracker.init({
       size: 10,
       callbacks: area.mouseCallbacks
     });
+    return resizerEl;
   };
 
   rootElement = draw.draw("<div class=\"sound-paint\"></div>", $('body'));
@@ -218,7 +219,7 @@
 
   rootElement.css('height', '100%');
 
-  exports.init({
+  resizer.setToMaximum(exports.init({
     len: 300,
     blockSize: 0.02,
     playSlider: 0.09,
@@ -235,12 +236,12 @@
       }
     ],
     rootElement: rootElement
-  });
+  }));
 
 }).call(this);
 
 
-},{"./link.coffee":14,"./area.coffee":10,"./dom/draw.coffee":5,"./mouse_tracker.coffee":15,"jquery":16}],14:[function(require,module,exports){
+},{"./link.coffee":14,"./area.coffee":10,"./dom/draw.coffee":5,"./mouse_tracker.coffee":15,"./standard-ui/resizer.coffee":16,"jquery":17}],14:[function(require,module,exports){
 (function() {
   var buttons, playSlider, resizer, sliderWithMaxAndMin, _;
 
@@ -279,17 +280,18 @@
     _.keys(btnHash).forEach(function(key) {
       return initButtonToSendMessage(key);
     });
-    return resizerEl = resizer.init({
+    resizerEl = resizer.init({
       key: 'areaResize',
       parent: area,
       callbacks: callbacks
     });
+    return resizerEl;
   };
 
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":8,"./standard-ui/buttons.coffee":6,"./dom/slider_with_max.coffee":17,"./standard-ui/resizer.coffee":18,"lodash":12}],15:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":8,"./standard-ui/buttons.coffee":6,"./dom/slider_with_max.coffee":18,"./standard-ui/resizer.coffee":16,"lodash":12}],15:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -358,7 +360,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":5,"lodash":12,"jquery":16}],12:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":5,"lodash":12,"jquery":17}],12:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7146,7 +7148,7 @@
 }.call(this));
 
 })(window)
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16327,7 +16329,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":16,"jquery-ui":19}],9:[function(require,module,exports){
+},{"jquery":17,"jquery-ui":19}],9:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16364,7 +16366,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":5,"jquery-ui":19}],17:[function(require,module,exports){
+},{"./draw.coffee":5,"jquery-ui":19}],18:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16425,9 +16427,9 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":12}],18:[function(require,module,exports){
+},{"lodash":12}],16:[function(require,module,exports){
 (function() {
-  var $, draw, guiInit, ui;
+  var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, guiInit, ui;
 
   $ = require('jquery');
 
@@ -16437,49 +16439,56 @@ return jQuery;
 
   guiInit = require('../gui_builder.coffee');
 
+  BOTTOM_CONTROL_SIZE = 100;
+
+  RIGHT_CONTROL_SIZE = 10;
+
+  exports.setToMaximum = function(element) {
+    var largest, root;
+    largest = Math.min((root = element.params.parent.rootElement).width() - RIGHT_CONTROL_SIZE, root.height() - BOTTOM_CONTROL_SIZE);
+    if (element.params.parent['len'] !== largest) {
+      element.val(largest);
+      return exports.dealWithChange(element, largest);
+    }
+  };
+
+  exports.dealWithChange = function(element, val) {
+    var old;
+    old = element.params.parent['len'];
+    element.params.parent['len'] = parseInt(val);
+    element.params.cb(old);
+    return guiInit.init(element.params.parent);
+  };
+
   exports.init = function(params) {
-    var BOTTOM_CONTROL_SIZE, cb, dealWithChange, element, elementMaximize, setToMaximum;
-    BOTTOM_CONTROL_SIZE = 100;
+    var element, elementMaximize;
     element = draw.draw("<input type=\"number\" class=\"resize\">", params.parent.container);
     elementMaximize = draw.draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", params.parent.container);
     element.val(params.parent['len']);
     element.css('width', 46);
-    cb = function(old) {
-      return params.callbacks[params.key]({
-        area: params.parent,
-        old: old,
-        key: params.key
-      });
-    };
-    dealWithChange = function(val) {
-      var old;
-      old = params.parent['len'];
-      params.parent['len'] = parseInt(val);
-      cb(old);
-      return guiInit.init(params.parent);
-    };
-    setToMaximum = function() {
-      var largest, root;
-      largest = Math.min((root = params.parent.rootElement).width(), root.height() - BOTTOM_CONTROL_SIZE);
-      if (params.parent['len'] !== largest) {
-        element.val(largest);
-        return dealWithChange(largest);
+    element.params = {
+      parent: params.parent,
+      cb: function(old) {
+        return params.callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
       }
     };
     elementMaximize.click(function() {
-      return setToMaximum(event.target.value);
+      return exports.setToMaximum(element);
     });
     element.change(function(event) {
-      return dealWithChange();
+      return exports.dealWithChange(element, event.target.value);
     });
-    setToMaximum();
     return element;
   };
 
 }).call(this);
 
 
-},{"../dom/draw.coffee":5,"../gui_builder.coffee":13,"jquery":16,"jquery-ui":19}],19:[function(require,module,exports){
+},{"../dom/draw.coffee":5,"../gui_builder.coffee":13,"jquery":17,"jquery-ui":19}],19:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31487,5 +31496,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":16}]},{},[10,4,1,2,7,5,9,17,13,14,3,15,11,6,8,18])
+},{"jquery":17}]},{},[10,4,1,2,7,5,9,18,13,14,3,15,11,6,8,16])
 ;

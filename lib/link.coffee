@@ -45,6 +45,7 @@ exports.init = (area)->
     parent: area
     callbacks: callbacks
   )
+  resizerEl
 
 
   
