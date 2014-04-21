@@ -6,6 +6,7 @@
 playSlider = require './standard-ui/play_slider.coffee'
 buttons = require './standard-ui/buttons.coffee'
 sliderWithMaxAndMin = require './dom/slider_with_max.coffee'
+resizer = require './standard-ui/resizer.coffee'
 _ = require 'lodash'
 
 exports.getGlobalCallbacks = ->
@@ -18,8 +19,8 @@ exports.init = (area)->
   btnHash = buttons.init(area)
 
 # SLIDERS
-  playSlider.init(area, callbacks)
-  speedSlider = sliderWithMaxAndMin.init(
+  playSliderEl = playSlider.init(area, callbacks)
+  speedSliderEl = sliderWithMaxAndMin.init(
       parent: area,
       key: 'bpm'
     , callbacks)
@@ -35,5 +36,16 @@ exports.init = (area)->
 
   _.keys(btnHash).forEach (key)->
     initButtonToSendMessage key
+
+
+  # Make sure this is called last.
+  # After the initialization code, there's a call to resize to max possible size 
+  resizerEl = resizer.init(
+    key: 'areaResize'
+    parent: area
+    callbacks: callbacks
+  )
+
+
   
 

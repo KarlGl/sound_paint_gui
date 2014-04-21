@@ -7,7 +7,7 @@ ui = require 'jquery-ui';
 
 exports.draw = (child, parent)->
   if (!parent?)
-    parent = $('body')
+    parent = $('.sound-paint')
   c=$(child)
   parent.append(c)
   c

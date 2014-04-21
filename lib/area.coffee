@@ -19,7 +19,11 @@ exports.addUnitCanditate = (area, unit)->
 
 exports.init = (area)->
   area = areaDraw.init(area)
+  exports.mouseInit(area)
+  window.globalarea = area
+  area
 
+exports.mouseInit = (area)->
   potentiallyMakeNewBlock = (mouseState)->
     if (mouseState.new.down)
       # for each area
@@ -37,6 +41,3 @@ exports.init = (area)->
       potentiallyMakeNewBlock(mouseState)
     mouseup: (mouseState)->
   }
-
-  window.area = area
-  area

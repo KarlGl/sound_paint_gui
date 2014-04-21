@@ -4,15 +4,28 @@
 #
 link = require './link.coffee'
 areaClass = require './area.coffee'
+draw = require './dom/draw.coffee'
 mouseTracker = require './mouse_tracker.coffee'
+$ = require 'jquery'
 
 exports.init = (area)->
+  # potentially remove old container.
+  if (area.container?)
+    area.container.remove()
+
+  area.container = draw.draw("<div class=\"area-ct\"></div>")
+  area.container.parentContainer = 
+
   area = areaClass.init(area)
   link.init(area)
   mouseTracker.init
     size: 10
     callbacks: area.mouseCallbacks
 
+# if $('.sound-paint').length
+rootElement = draw.draw("<div class=\"sound-paint\"></div>", $('body'))
+rootElement.css('width', '100%')
+rootElement.css('height', '100%')
 
 exports.init({
   len: 300,
@@ -22,10 +35,12 @@ exports.init({
   isPlaying: false,
   isLooping: false,
   units: [
-    # {x: 0.25, y: 0.1},
-    # {x: 0.5, y: 0.2},
+    {x: 0.25, y: 0.1},
+    {x: 0.5, y: 0.2},
     # {x: 0.75, y: 0.1},
-  ]})
+  ],
+  rootElement: rootElement
+  })
 
 # # Get the bounding box of a block.
 # exports.getBlockBB = (block) ->

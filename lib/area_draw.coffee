@@ -3,18 +3,31 @@
 #
 draw = require './dom/draw.coffee'
 colors = require './color_theme.coffee'
+block = require './block.coffee'
 colors = colors.colors
 draw = draw.draw
 
+
+exports.setSize = (areaParam)->
+  areaParam.face.attr('width', areaParam.len)
+  areaParam.face.attr('height', areaParam.len)
+
+  # Draw all units.
+  areaParam.units.forEach (unit)->
+    block.init areaParam, unit
+
 exports.init = (area)->
-  area.face = draw('<canvas class="area"></canvas>')
-  area.face.attr('width', area.len)
-  area.face.attr('height', area.len)
+  # if (area.face?)
+    # area.face.remove()  
+  area.face = draw('<canvas class="area"></canvas>', area.container)
   area.context = area.face[0].getContext("2d")
   pos = area.face.position()
 
+  exports.setSize(area)
+
+# Draw play indicator
   area.playIndicator =
-    face: draw('<div class="play-indicator"></div>')
+    face: draw('<div class="play-indicator"></div>', area.container)
     setX: (newVal)->
       @face.css('left', (newVal * area.len) + pos.left )
       .css('top', pos.top)

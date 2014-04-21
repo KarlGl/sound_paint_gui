@@ -10,12 +10,12 @@ exports.init = (params, callbacks, overrides)->
 
   cb = (old)->
         callbacks[params.key](
-          area: area
+          area: params.parent
           old: old
           key: params.key
         )
 
-  element = draw.draw("<div id=\"#{params.key}\"></div>")
+  element = draw.draw("<div id=\"#{params.key}\"></div>", params.parent.container)
 
   element.css('width', params.parent.face.width())
 

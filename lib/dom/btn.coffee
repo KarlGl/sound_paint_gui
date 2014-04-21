@@ -8,7 +8,7 @@ colors = require('../color_theme.coffee')
 colors = colors.colors
 
 exports.init = (params)->
-  btn = draw.draw("<div id=\"#{params.id}\">#{params.inner}</div>")
+  btn = draw.draw("<div id=\"#{params.id}\">#{params.inner}</div>", params.parent.container)
   size = 30
   # btn.css('width', size)
   btn.css('height', size)
