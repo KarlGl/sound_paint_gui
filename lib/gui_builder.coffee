@@ -10,6 +10,8 @@ resizer = require './standard-ui/resizer.coffee'
 $ = require 'jquery'
 colors = require './color_theme.coffee'
 colors = colors.colors
+# from the other project
+soundHelpers = window.SPhelpers
 
 exports.init = (area)->
   # potentially remove old container.
@@ -61,7 +63,7 @@ resizer.setToMaximum(
 
   grid: {
     x: {
-      isSnap: true,
+      isSnap: false,
       isShow: true,
       get: (n)->
         1/16 * n
@@ -70,15 +72,8 @@ resizer.setToMaximum(
       isSnap: true,
       isShow: true,
       get: (n)->
-        # a=Math.pow(2, (octave.to_f-1))
         b=Math.pow(1.059463, n)
-        out = 27.5*b
-
-        out = ( out - 15 ) / 4985
-        # if (n==0)
-        #   0
-        # else
-        #   1/64 * (n*n)
+        soundHelpers.humanEar.freqToRange(27.5*b)
     }  
   },
 

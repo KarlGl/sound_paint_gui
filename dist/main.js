@@ -200,57 +200,7 @@
 
 },{"./block.coffee":5,"./area_draw.coffee":3,"./positions/positions.coffee":11,"lodash":12}],13:[function(require,module,exports){
 (function() {
-  var buttons, playSlider, resizer, sliderWithMaxAndMin, _;
-
-  playSlider = require('./standard-ui/play_slider.coffee');
-
-  buttons = require('./standard-ui/buttons.coffee');
-
-  sliderWithMaxAndMin = require('./dom/slider_with_max.coffee');
-
-  resizer = require('./standard-ui/resizer.coffee');
-
-  _ = require('lodash');
-
-  exports.getGlobalCallbacks = function() {
-    return window.callbacks;
-  };
-
-  exports.init = function(area) {
-    var btnHash, callbacks, initButtonToSendMessage, playSliderEl, resizerEl, speedSliderEl;
-    callbacks = exports.getGlobalCallbacks();
-    btnHash = buttons.init(area);
-    playSliderEl = playSlider.init(area, callbacks);
-    speedSliderEl = sliderWithMaxAndMin.init({
-      parent: area,
-      key: 'bpm'
-    }, callbacks);
-    initButtonToSendMessage = function(name) {
-      return btnHash[name](function(old) {
-        return callbacks[name]({
-          area: area,
-          old: old,
-          key: name
-        });
-      });
-    };
-    _.keys(btnHash).forEach(function(key) {
-      return initButtonToSendMessage(key);
-    });
-    resizerEl = resizer.init({
-      key: 'areaResize',
-      parent: area,
-      callbacks: callbacks
-    });
-    return resizerEl;
-  };
-
-}).call(this);
-
-
-},{"./standard-ui/play_slider.coffee":8,"./standard-ui/buttons.coffee":6,"./dom/slider_with_max.coffee":14,"./standard-ui/resizer.coffee":15,"lodash":12}],16:[function(require,module,exports){
-(function() {
-  var $, areaClass, colors, draw, link, mouseTracker, resizer, rootElement;
+  var $, areaClass, colors, draw, link, mouseTracker, resizer, rootElement, soundHelpers;
 
   link = require('./link.coffee');
 
@@ -267,6 +217,8 @@
   colors = require('./color_theme.coffee');
 
   colors = colors.colors;
+
+  soundHelpers = window.SPhelpers;
 
   exports.init = function(area) {
     var fillFuncs, resizerEl;
@@ -321,7 +273,7 @@
     isLooping: false,
     grid: {
       x: {
-        isSnap: true,
+        isSnap: false,
         isShow: true,
         get: function(n) {
           return 1 / 16 * n;
@@ -331,10 +283,9 @@
         isSnap: true,
         isShow: true,
         get: function(n) {
-          var b, out;
+          var b;
           b = Math.pow(1.059463, n);
-          out = 27.5 * b;
-          return out = (out - 15) / 4985;
+          return soundHelpers.humanEar.freqToRange(27.5 * b);
         }
       }
     },
@@ -345,7 +296,57 @@
 }).call(this);
 
 
-},{"./link.coffee":13,"./area.coffee":10,"./dom/draw.coffee":4,"./mouse_tracker.coffee":17,"./standard-ui/resizer.coffee":15,"./color_theme.coffee":1,"jquery":18}],17:[function(require,module,exports){
+},{"./link.coffee":14,"./area.coffee":10,"./dom/draw.coffee":4,"./mouse_tracker.coffee":15,"./standard-ui/resizer.coffee":16,"./color_theme.coffee":1,"jquery":17}],14:[function(require,module,exports){
+(function() {
+  var buttons, playSlider, resizer, sliderWithMaxAndMin, _;
+
+  playSlider = require('./standard-ui/play_slider.coffee');
+
+  buttons = require('./standard-ui/buttons.coffee');
+
+  sliderWithMaxAndMin = require('./dom/slider_with_max.coffee');
+
+  resizer = require('./standard-ui/resizer.coffee');
+
+  _ = require('lodash');
+
+  exports.getGlobalCallbacks = function() {
+    return window.callbacks;
+  };
+
+  exports.init = function(area) {
+    var btnHash, callbacks, initButtonToSendMessage, playSliderEl, resizerEl, speedSliderEl;
+    callbacks = exports.getGlobalCallbacks();
+    btnHash = buttons.init(area);
+    playSliderEl = playSlider.init(area, callbacks);
+    speedSliderEl = sliderWithMaxAndMin.init({
+      parent: area,
+      key: 'bpm'
+    }, callbacks);
+    initButtonToSendMessage = function(name) {
+      return btnHash[name](function(old) {
+        return callbacks[name]({
+          area: area,
+          old: old,
+          key: name
+        });
+      });
+    };
+    _.keys(btnHash).forEach(function(key) {
+      return initButtonToSendMessage(key);
+    });
+    resizerEl = resizer.init({
+      key: 'areaResize',
+      parent: area,
+      callbacks: callbacks
+    });
+    return resizerEl;
+  };
+
+}).call(this);
+
+
+},{"./standard-ui/play_slider.coffee":8,"./standard-ui/buttons.coffee":6,"./dom/slider_with_max.coffee":18,"./standard-ui/resizer.coffee":16,"lodash":12}],15:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -414,7 +415,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":1,"./dom/draw.coffee":4,"lodash":12,"jquery":18}],12:[function(require,module,exports){
+},{"./color_theme.coffee":1,"./dom/draw.coffee":4,"jquery":17,"lodash":12}],12:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7202,7 +7203,7 @@
 }.call(this));
 
 })(window)
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16316,69 +16317,7 @@ return jQuery;
 }));
 
 })()
-},{}],4:[function(require,module,exports){
-(function() {
-  var $, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  exports.draw = function(child, parent) {
-    var c;
-    if (parent == null) {
-      parent = $('.sound-paint');
-    }
-    c = $(child);
-    parent.append(c);
-    return c;
-  };
-
-  if (typeof window !== 'undefined') {
-    window.jq = $;
-  }
-
-}).call(this);
-
-
-},{"jquery":18,"jquery-ui":19}],9:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params, callbacks, overrides) {
-    var cb, element, percision;
-    cb = function(old) {
-      return callbacks[params.key]({
-        area: params.parent,
-        old: old,
-        key: params.key
-      });
-    };
-    element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
-    element.css('width', params.parent.face.width());
-    percision = 100000;
-    element.slider({
-      min: 0,
-      max: overrides ? percision * overrides.max : percision,
-      change: function(event, ui) {
-        var old;
-        old = params.parent[params.key];
-        params.parent[params.key] = ui.value / percision;
-        return cb(old);
-      }
-    });
-    element.slider('option', 'value', params.parent[params.key] * percision);
-    return element;
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":4,"jquery-ui":19}],7:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function() {
   var colors, draw, ui;
 
@@ -16420,7 +16359,69 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],14:[function(require,module,exports){
+},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],9:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    cb = function(old) {
+      return callbacks[params.key]({
+        area: params.parent,
+        old: old,
+        key: params.key
+      });
+    };
+    element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
+    element.css('width', params.parent.face.width());
+    percision = 100000;
+    element.slider({
+      min: 0,
+      max: overrides ? percision * overrides.max : percision,
+      change: function(event, ui) {
+        var old;
+        old = params.parent[params.key];
+        params.parent[params.key] = ui.value / percision;
+        return cb(old);
+      }
+    });
+    element.slider('option', 'value', params.parent[params.key] * percision);
+    return element;
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":4,"jquery-ui":19}],4:[function(require,module,exports){
+(function() {
+  var $, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  exports.draw = function(child, parent) {
+    var c;
+    if (parent == null) {
+      parent = $('.sound-paint');
+    }
+    c = $(child);
+    parent.append(c);
+    return c;
+  };
+
+  if (typeof window !== 'undefined') {
+    window.jq = $;
+  }
+
+}).call(this);
+
+
+},{"jquery":17,"jquery-ui":19}],18:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16502,7 +16503,7 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":12}],15:[function(require,module,exports){
+},{"lodash":12}],16:[function(require,module,exports){
 (function() {
   var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, guiInit, ui;
 
@@ -16563,7 +16564,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":4,"../gui_builder.coffee":16,"jquery":18,"jquery-ui":19}],19:[function(require,module,exports){
+},{"../dom/draw.coffee":4,"../gui_builder.coffee":13,"jquery-ui":19,"jquery":17}],19:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31571,5 +31572,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":18}]},{},[10,3,5,1,7,4,9,14,16,13,2,17,11,6,8,15])
+},{"jquery":17}]},{},[10,3,5,1,7,4,9,18,13,14,2,15,11,6,8,16])
 ;
