@@ -37,7 +37,7 @@ exports.mouseInit = (area)->
 
         ['x', 'y'].forEach (axis)->
           gridHash = area.grid[axis]
-          if (gridHash.isSnap)
+          if (area['gridIsSnap_' + axis])
             newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get)
 
         # next time we play, this new unit will be there if created. 

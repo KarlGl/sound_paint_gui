@@ -9,6 +9,18 @@ exports.buttonList = [
   name: 'isLooping'
   inner: 'loop'
 ,
+  name: 'gridIsShow_x'
+  inner: 'Show Grid X'
+,
+  name: 'gridIsShow_y'
+  inner: 'Show Grid Y'
+,
+  name: 'gridIsSnap_x'
+  inner: 'Snap Grid X'
+,
+  name: 'gridIsSnap_y'
+  inner: 'Snap Grid Y'
+,
   # TO IMPL
   # name: 'isFreeplay'
   # inner: 'always playing'

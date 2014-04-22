@@ -17,10 +17,11 @@ exports.init = (area)->
   # potentially remove old container.
   if (area.container?)
     area.container.remove()
-
   area.container = draw.draw("<div class=\"area-ct\"></div>")
-
   area = areaClass.init(area)
+
+  area.restart = ->
+    exports.init(area)
 
   # Draw grids.
   fillFuncs = 
@@ -30,7 +31,7 @@ exports.init = (area)->
       area.context.fillRect(0, (area.len - point), area.len, 1)
   ['x', 'y'].forEach (axis)->
     hash = area.grid[axis]
-    if hash.isShow
+    if area['gridIsShow_' + axis]
       area.context.fillStyle = colors.inactive
       fill = (n)->
         # side effects in if statement
@@ -61,16 +62,16 @@ resizer.setToMaximum(
   isPlaying: false,
   isLooping: false,
 
+  gridIsSnap_x: false,
+  gridIsShow_x: false,
+  gridIsSnap_y: true,
+  gridIsShow_y: true,
   grid: {
     x: {
-      isSnap: false,
-      isShow: true,
       get: (n)->
         1/16 * n
     } 
     y: {
-      isSnap: true,
-      isShow: true,
       get: (n)->
         b=Math.pow(1.059463, n)
         soundHelpers.humanEar.freqToRange(27.5*b)

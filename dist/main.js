@@ -95,6 +95,18 @@
     }, {
       name: 'isLooping',
       inner: 'loop'
+    }, {
+      name: 'gridIsShow_x',
+      inner: 'Show Grid X'
+    }, {
+      name: 'gridIsShow_y',
+      inner: 'Show Grid Y'
+    }, {
+      name: 'gridIsSnap_x',
+      inner: 'Snap Grid X'
+    }, {
+      name: 'gridIsSnap_y',
+      inner: 'Snap Grid Y'
     }
   ];
 
@@ -176,7 +188,7 @@
           ['x', 'y'].forEach(function(axis) {
             var gridHash;
             gridHash = area.grid[axis];
-            if (gridHash.isSnap) {
+            if (area['gridIsSnap_' + axis]) {
               return newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
             }
           });
@@ -227,6 +239,9 @@
     }
     area.container = draw.draw("<div class=\"area-ct\"></div>");
     area = areaClass.init(area);
+    area.restart = function() {
+      return exports.init(area);
+    };
     fillFuncs = {
       x: function(point) {
         return area.context.fillRect(point, 0, 1, area.len);
@@ -238,7 +253,7 @@
     ['x', 'y'].forEach(function(axis) {
       var fill, hash;
       hash = area.grid[axis];
-      if (hash.isShow) {
+      if (area['gridIsShow_' + axis]) {
         area.context.fillStyle = colors.inactive;
         fill = function(n) {
           var pos;
@@ -271,17 +286,17 @@
     bpm: 15,
     isPlaying: false,
     isLooping: false,
+    gridIsSnap_x: false,
+    gridIsShow_x: false,
+    gridIsSnap_y: true,
+    gridIsShow_y: true,
     grid: {
       x: {
-        isSnap: false,
-        isShow: true,
         get: function(n) {
           return 1 / 16 * n;
         }
       },
       y: {
-        isSnap: true,
-        isShow: true,
         get: function(n) {
           var b;
           b = Math.pow(1.059463, n);
@@ -415,7 +430,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":1,"./dom/draw.coffee":4,"jquery":17,"lodash":12}],12:[function(require,module,exports){
+},{"./color_theme.coffee":1,"./dom/draw.coffee":4,"lodash":12,"jquery":17}],12:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -16359,7 +16374,28 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],9:[function(require,module,exports){
+},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],18:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":4,"./slider.coffee":9,"jquery-ui":19}],9:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16421,28 +16457,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":17,"jquery-ui":19}],18:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":4,"./slider.coffee":9,"jquery-ui":19}],11:[function(require,module,exports){
+},{"jquery":17,"jquery-ui":19}],11:[function(require,module,exports){
 (function() {
   var _;
 
