@@ -43,7 +43,7 @@ exports.init = (area)->
 
   exports.buttonList.forEach (args)->
     # Only show if visible in the GUI is set.
-    if area.visibleGuiControls[args.name]
+    if area.state.visibleGuiControls[args.name]
       addStandardToggle args 
 
   btnHash

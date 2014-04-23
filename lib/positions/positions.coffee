@@ -1,3 +1,5 @@
+# common functions on positions.
+
 _ = require 'lodash'
 # 
 # Test if an (x,y) point is in a bounding box.

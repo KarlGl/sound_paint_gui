@@ -13,13 +13,13 @@ exports.setToMaximum = (element)->
     (root.height() - BOTTOM_CONTROL_SIZE))
 
   # stop infinate loop
-  if (element.params.parent['len'] != largest)
+  if (element.params.parent.state['len'] != largest)
     element.val(largest)
     exports.dealWithChange(element, largest)
 
 exports.dealWithChange = (element, val)->
-    old = element.params.parent['len']
-    element.params.parent['len'] = parseInt(val)
+    old = element.params.parent.state['len']
+    element.params.parent.state['len'] = parseInt(val)
     element.params.cb(old)
     guiInit.init(element.params.parent)
 
@@ -31,7 +31,7 @@ exports.init = (params)->
 
   elementMaximize = draw.draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", params.parent.container)
 
-  element.val(params.parent['len'])
+  element.val(params.parent.state['len'])
   element.css('width', 46)
 
   element.params = 

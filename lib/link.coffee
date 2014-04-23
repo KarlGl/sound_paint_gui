@@ -47,7 +47,7 @@ exports.init = (area)->
 
   # Make sure this is called last.
   # After the initialization code, there's a call to resize to max possible size 
-  if (area.visibleGuiControls.len)
+  if (area.state.visibleGuiControls.len)
     resizerEl = resizer.init(
       key: 'areaResize'
       parent: area

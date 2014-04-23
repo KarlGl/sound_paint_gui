@@ -32,32 +32,67 @@ exports.init = (area)->
   # Draw grids.
   fillFuncs = 
     x: (point)->
-      area.context.fillRect(point, 0, 1, area.len)
+      area.context.fillRect(point, 0, 1, area.state.len)
     y: (point)->
-      area.context.fillRect(0, (area.len - point), area.len, 1)
+      area.context.fillRect(0, (area.state.len - point), area.state.len, 1)
   ['x', 'y'].forEach (axis)->
     hash = area.grid[axis]
-    if area['gridIsShow_' + axis]
+    if area.state['gridIsShow_' + axis]
       area.context.fillStyle = colors.inactive
       fill = (n)->
         # side effects in if statement
         if (pos = hash.get(n)) < 1
-          fillFuncs[axis](pos * area.len)
+          fillFuncs[axis](pos * area.state.len)
           fill(n+1)
       fill(0)
 
-
+  #
+  # here
+  #
   resizerEl = link.init(area)
+
+
   mouseTracker.init
     size: 10
     callbacks: area.mouseCallbacks
   resizerEl
 
-# if $('.sound-paint').length
 rootElement = draw.draw("<div class=\"sound-paint\"></div>", $('body'))
 rootElement.css('width', '100%')
 rootElement.css('height', '100%')
 
+startState = {
+  len: 300,
+  blockSize: 0.02,
+  playSlider: 0.09,
+  bpm: 6,
+  isPlaying: false,
+  isLooping: true,
+
+  visibleGuiControls: {
+    isPlaying: true,
+    isLooping: true,
+    playSlider: true,
+    gridIsSnap_x: true,
+    gridIsShow_x: true,
+    gridIsSnap_y: true,
+    gridIsShow_y: true,
+    bpm: true,
+    len: true,
+    stateInput: true
+  },
+
+  gridIsSnap_x: false,
+  gridIsShow_x: false,
+  gridIsSnap_y: true,
+  gridIsShow_y: true,
+  
+  units: [
+    # {x: 0.25, y: 0.1},
+    # {x: 0.5, y: 0.2},
+    # {x: 0.75, y: 0.1},
+  ]
+}
 area = {
   rootElement: rootElement,
   grid: {
@@ -72,54 +107,12 @@ area = {
       }
     },
 
-  state: {
-    len: 300,
-    blockSize: 0.02,
-    playSlider: 0.09,
-    bpm: 6,
-    isPlaying: false,
-    isLooping: true,
-
-    visibleGuiControls: {
-      isPlaying: true,
-      isLooping: true,
-      playSlider: true,
-      gridIsSnap_x: true,
-      gridIsShow_x: true,
-      gridIsSnap_y: true,
-      gridIsShow_y: true,
-      bpm: true,
-      len: true,
-      stateInput: true
-    },
-
-    gridIsSnap_x: false,
-    gridIsShow_x: false,
-    gridIsSnap_y: true,
-    gridIsShow_y: true,
-    
-    units: [
-      # {x: 0.25, y: 0.1},
-      # {x: 0.5, y: 0.2},
-      # {x: 0.75, y: 0.1},
-    ]
-    }
-  }
+  startState: startState
+  state: startState
+}
 # side effects
 initialized = exports.init(area)
 
-if (area.visibleGuiControls.len)
+if (area.state.visibleGuiControls.len)
   resizer.setToMaximum(initialized)
-
-# # Get the bounding box of a block.
-# exports.getBlockBB = (block) ->
-#   left = block.x * @areaSizes
-#   left: left
-#   right: left + block.blockSize * @areaSizes
-
-# # Left side is allowed to be equal to, right is not.
-# exports.getBlocksFor = (pos) ->
-#   (if (exports.worlds.length and pos < exports.areaSizes) then exports.worlds[0].units.filter((unit) ->
-#     pos >= exports.getBlockBB(unit).left and pos < exports.getBlockBB(unit).right
-#   ) else [])
 

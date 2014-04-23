@@ -8,13 +8,17 @@ _ = require 'lodash'
 
 exports.addUnitCanditate = (area, unit)->
   # reject if duplicate
-  if (!positionLib.isIn(area.units, unit) &&
+  if (!positionLib.isIn(area.state.units, unit) &&
     # don't allow them right on the very end
     !(unit.x == 1) &&
     !(unit.y == 0)
   ) 
     console.log("New Unit", unit)
-    area.units.push unit
+
+    # here it is, we are changing state on the area
+    area.state.units.push unit
+    callbacks['units']({area: area})
+    
     block.init area, unit
 
 exports.init = (area)->
@@ -26,7 +30,7 @@ exports.init = (area)->
 exports.mouseInit = (area)->
   potentiallyMakeNewBlock = (mouseState)->
     if (mouseState.new.down)
-      snappedPoint = positionLib.snapToGrid(mouseState.new.pos, area.blockSize * area.len)
+      snappedPoint = positionLib.snapToGrid(mouseState.new.pos, area.state.blockSize * area.state.len)
 
       # for each area
       # back to a 0 to 1 position
@@ -37,7 +41,7 @@ exports.mouseInit = (area)->
 
         ['x', 'y'].forEach (axis)->
           gridHash = area.grid[axis]
-          if (area['gridIsSnap_' + axis])
+          if (area.state['gridIsSnap_' + axis])
             newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get)
 
         # next time we play, this new unit will be there if created. 

@@ -9,11 +9,11 @@ draw = draw.draw
 
 
 exports.setSize = (areaParam)->
-  areaParam.face.attr('width', areaParam.len)
-  areaParam.face.attr('height', areaParam.len)
+  areaParam.face.attr('width', areaParam.state.len)
+  areaParam.face.attr('height', areaParam.state.len)
 
   # Draw all units.
-  areaParam.units.forEach (unit)->
+  areaParam.state.units.forEach (unit)->
     block.init areaParam, unit
 
 exports.init = (area)->
@@ -29,9 +29,9 @@ exports.init = (area)->
   area.playIndicator =
     face: draw('<div class="play-indicator"></div>', area.container)
     setX: (newVal)->
-      @face.css('left', (newVal * area.len) + pos.left )
+      @face.css('left', (newVal * area.state.len) + pos.left )
       .css('top', pos.top)
-  area.playIndicator.face.css('height', area.len)
+  area.playIndicator.face.css('height', area.state.len)
     .css('background-color', colors.active)
 
   # method to get a box for the element

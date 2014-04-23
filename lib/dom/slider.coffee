@@ -8,7 +8,7 @@ draw = require './draw.coffee'
 # normalize true if you want it to be between 0..1
 exports.init = (params, callbacks, overrides)->
 
-  if params.parent.visibleGuiControls[params.key]
+  if params.parent.state.visibleGuiControls[params.key]
     cb = (old)->
       callbacks[params.key](
         area: params.parent
@@ -29,15 +29,15 @@ exports.init = (params, callbacks, overrides)->
           else
             percision
         change: ( event, ui )->
-          old = params.parent[params.key]
-          params.parent[params.key] = 
+          old = params.parent.state[params.key]
+          params.parent.state[params.key] = 
               ui.value / percision
 
           # need a way to set value without triggering this.
           cb(old)
     })
     # do here so change will get called
-    element.slider('option', 'value', params.parent[params.key] * percision)
+    element.slider('option', 'value', params.parent.state[params.key] * percision)
     element
 
 

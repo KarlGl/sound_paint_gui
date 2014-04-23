@@ -6,6 +6,7 @@ ui = require 'jquery-ui';
 draw = require './draw.coffee'
 colors = require('../color_theme.coffee')
 colors = colors.colors
+
 size = 30
 
 exports.init = (params)->
@@ -15,19 +16,19 @@ exports.init = (params)->
   btn.addClass('btn')
 
   set = (v)->
-    if (params.parent[params.key] != v)
-      old = params.parent[params.key]
-      params.parent[params.key] = v
+    if (params.parent.state[params.key] != v)
+      old = params.parent.state[params.key]
+      params.parent.state[params.key] = v
       params.cb(old)
-    if params.parent[params.key]
+    if params.parent.state[params.key]
       btn.addClass('btn-on')
       btn.css('background-color', colors.active)
     else 
       btn.addClass('btn-off')
       btn.css('background-color', colors.inactive)
 
-  set(params.parent[params.key])
+  set(params.parent.state[params.key])
 
   btn.click ->
-    set(!params.parent[params.key])
+    set(!params.parent.state[params.key])
 
