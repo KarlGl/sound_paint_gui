@@ -4,7 +4,7 @@
 
 exports.colors = 
   inactive: 'rgb(209, 209, 209)'
+  barelyThere: 'rgb(239, 239, 239)'
   active: 'green'
-  units: 'rgb(0, 0, 0)'
-  mouse:
-    inactive: 'rgb(169, 169, 169)'
+  # mouse:
+  #   inactive: 'rgb(169, 169, 169)'

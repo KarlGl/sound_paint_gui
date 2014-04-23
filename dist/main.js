@@ -1,18 +1,25 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  exports.colors = {
-    inactive: 'rgb(209, 209, 209)',
-    active: 'green',
-    units: 'rgb(0, 0, 0)',
-    mouse: {
-      inactive: 'rgb(169, 169, 169)'
-    }
+  exports.init = function(area, block) {
+    area.context.fillStyle = 'black';
+    return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
   };
 
 }).call(this);
 
 
 },{}],2:[function(require,module,exports){
+(function() {
+  exports.colors = {
+    inactive: 'rgb(209, 209, 209)',
+    barelyThere: 'rgb(239, 239, 239)',
+    active: 'green'
+  };
+
+}).call(this);
+
+
+},{}],3:[function(require,module,exports){
 (function() {
   exports.stringify = function(string) {
     return JSON.stringify(string, void 0, 2);
@@ -25,14 +32,14 @@
 }).call(this);
 
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function() {
 
 
 }).call(this);
 
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function() {
   var block, colors, draw;
 
@@ -79,23 +86,7 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":5,"./color_theme.coffee":1,"./block.coffee":6}],6:[function(require,module,exports){
-(function() {
-  var colors;
-
-  colors = require('./color_theme.coffee');
-
-  colors = colors.colors;
-
-  exports.init = function(area, block) {
-    area.context.fillStyle = colors.units;
-    return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
-  };
-
-}).call(this);
-
-
-},{"./color_theme.coffee":1}],7:[function(require,module,exports){
+},{"./dom/draw.coffee":6,"./color_theme.coffee":2,"./block.coffee":1}],7:[function(require,module,exports){
 (function() {
   var btnLib;
 
@@ -228,7 +219,7 @@
 }).call(this);
 
 
-},{"./block.coffee":6,"./area_draw.coffee":4,"./positions/positions.coffee":12,"lodash":13}],14:[function(require,module,exports){
+},{"./block.coffee":1,"./area_draw.coffee":5,"./positions/positions.coffee":12,"lodash":13}],14:[function(require,module,exports){
 (function() {
   var $, area, areaClass, colors, draw, initialized, link, mouseTracker, resizer, rootElement, soundHelpers, startState;
 
@@ -249,6 +240,10 @@
   colors = colors.colors;
 
   soundHelpers = window.SPhelpers;
+
+  colors = require('./color_theme.coffee');
+
+  colors = colors.colors;
 
   exports.init = function(area) {
     var fillFuncs, resizerEl;
@@ -284,6 +279,75 @@
       }
     });
     resizerEl = link.init(area);
+    area.tools = [];
+    area.toolCt = draw.draw("<div class=\"toolCt\"></div>", area.container).css('border', "" + colors.active + " 1px solid").css('background-color', colors.barelyThere);
+    area.state.tools.forEach(function(toolName) {
+      var tool;
+      tool = {};
+      tool.active = false;
+      tool.set = function(isActive) {
+        if (isActive) {
+          this.element.removeClass('btn-off');
+          this.element.addClass('btn-on');
+          this.active = true;
+          return this.element.css('background-color', colors.active);
+        } else {
+          this.active = false;
+          this.element.removeClass('btn-on');
+          this.element.addClass('btn-off');
+          return this.element.css('background-color', colors.inactive);
+        }
+      };
+      tool.exclusiveOptions = [];
+      if (toolName === 'pen') {
+        tool.exclusiveOptions = area.state.waveforms;
+      }
+      tool.element = draw.draw("<div class=\"btn tool " + toolName + "\">" + toolName + "</div>", area.toolCt);
+      return area.tools.push(tool);
+    });
+    area.toolExclusiveOptionsCt = draw.draw("<div class=\"waveCt\"></div>", area.toolCt).css('border', "" + colors.active + " 1px solid").css('background-color', colors.inactive);
+    area.tools.forEach(function(tool) {
+      var ar;
+      tool.exclusiveOptionInstances = [];
+      tool.exclusiveOptions.forEach(function(optionConfig) {
+        var option;
+        option = {};
+        option.active = false;
+        option.set = function(isActive) {
+          if (isActive) {
+            this.element.removeClass('btn-off');
+            this.element.addClass('btn-on');
+            this.active = true;
+            return this.element.css("border", "" + colors.active + " 6px solid");
+          } else {
+            this.active = false;
+            this.element.removeClass('btn-on');
+            this.element.addClass('btn-off');
+            return this.element.css("border", "none");
+          }
+        };
+        option.element = draw.draw("<div class=\"option btn\">" + optionConfig.name + "</div>", area.toolExclusiveOptionsCt).css('background-color', optionConfig.color).css('color', 'white');
+        option.element.click(function() {
+          tool.exclusiveOptionInstances.forEach(function(option) {
+            return option.set(false);
+          });
+          return option.set(true);
+        });
+        return tool.exclusiveOptionInstances.push(option);
+      });
+      if ((ar = tool.exclusiveOptionInstances).length) {
+        ar[0].set(true);
+      }
+      return tool.element.click(function() {
+        area.tools.forEach(function(tool) {
+          return tool.set(false);
+        });
+        return tool.set(true);
+      });
+    });
+    if (area.tools.length) {
+      area.tools[0].set(true);
+    }
     mouseTracker.init({
       size: 10,
       callbacks: area.mouseCallbacks
@@ -320,7 +384,17 @@
     gridIsShow_x: false,
     gridIsSnap_y: true,
     gridIsShow_y: true,
-    units: []
+    units: [],
+    tools: ['pen'],
+    waveforms: [
+      {
+        name: 'sin',
+        color: "#6a00ff"
+      }, {
+        name: 'sqr',
+        color: "#0000ff"
+      }
+    ]
   };
 
   area = {
@@ -352,7 +426,7 @@
 }).call(this);
 
 
-},{"./link.coffee":15,"./area.coffee":11,"./dom/draw.coffee":5,"./mouse_tracker.coffee":16,"./standard-ui/resizer.coffee":17,"./color_theme.coffee":1,"jquery":18}],15:[function(require,module,exports){
+},{"./link.coffee":15,"./area.coffee":11,"./dom/draw.coffee":6,"./mouse_tracker.coffee":16,"./standard-ui/resizer.coffee":17,"./color_theme.coffee":2,"jquery":18}],15:[function(require,module,exports){
 (function() {
   var buttons, playSlider, resizer, sliderWithMaxAndMin, textarea, _;
 
@@ -480,7 +554,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":1,"./dom/draw.coffee":5,"lodash":13,"jquery":18}],13:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":6,"lodash":13,"jquery":18}],13:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -16425,7 +16499,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":5,"../color_theme.coffee":1,"jquery-ui":21}],5:[function(require,module,exports){
+},{"./draw.coffee":6,"../color_theme.coffee":2,"jquery-ui":21}],6:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16489,7 +16563,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":5,"jquery-ui":21}],19:[function(require,module,exports){
+},{"./draw.coffee":6,"jquery-ui":21}],19:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16510,7 +16584,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":5,"./slider.coffee":10,"jquery-ui":21}],12:[function(require,module,exports){
+},{"./draw.coffee":6,"./slider.coffee":10,"jquery-ui":21}],12:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16583,9 +16657,9 @@ return jQuery;
 
   guiInit = require('../gui_builder.coffee');
 
-  BOTTOM_CONTROL_SIZE = 200;
+  BOTTOM_CONTROL_SIZE = 230;
 
-  RIGHT_CONTROL_SIZE = 10;
+  RIGHT_CONTROL_SIZE = 20;
 
   exports.setToMaximum = function(element) {
     var largest, root;
@@ -16632,7 +16706,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":5,"../gui_builder.coffee":14,"jquery":18,"jquery-ui":21}],20:[function(require,module,exports){
+},{"../dom/draw.coffee":6,"../gui_builder.coffee":14,"jquery":18,"jquery-ui":21}],20:[function(require,module,exports){
 (function() {
   var draw, guiInit, json, ui;
 
@@ -16682,7 +16756,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":5,"../gui_builder.coffee":14,"../dom/json.coffee":2,"jquery-ui":21}],21:[function(require,module,exports){
+},{"../dom/draw.coffee":6,"../gui_builder.coffee":14,"../dom/json.coffee":3,"jquery-ui":21}],21:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31690,5 +31764,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":18}]},{},[11,4,6,1,8,5,2,10,19,14,15,3,16,12,7,9,17,20])
+},{"jquery":18}]},{},[11,5,1,2,8,6,3,10,19,14,15,4,16,12,7,9,17,20])
 ;
