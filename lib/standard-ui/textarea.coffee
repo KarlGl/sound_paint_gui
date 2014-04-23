@@ -1,11 +1,7 @@
-# 
-# A slider
-#
 
 ui = require 'jquery-ui';
-draw = require './draw.coffee'
+draw = require '../dom/draw.coffee'
 
-# normalize true if you want it to be between 0..1
 exports.init = (params, callbacks, overrides)->
 
   if params.parent.visibleGuiControls[params.key]
@@ -39,6 +35,4 @@ exports.init = (params, callbacks, overrides)->
     # do here so change will get called
     element.slider('option', 'value', params.parent[params.key] * percision)
     element
-
-
 

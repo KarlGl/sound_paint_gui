@@ -19,7 +19,7 @@ exports.setSize = (areaParam)->
 exports.init = (area)->
   # if (area.face?)
     # area.face.remove()  
-  area.face = draw('<canvas class="area"></canvas>', area.container)
+  area.face = draw('<canvas class="area"></canvas><br/>', area.container)
   area.context = area.face[0].getContext("2d")
   pos = area.face.position()
 

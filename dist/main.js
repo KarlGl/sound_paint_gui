@@ -43,7 +43,7 @@
 
   exports.init = function(area) {
     var pos;
-    area.face = draw('<canvas class="area"></canvas>', area.container);
+    area.face = draw('<canvas class="area"></canvas><br/>', area.container);
     area.context = area.face[0].getContext("2d");
     pos = area.face.position();
     exports.setSize(area);
@@ -125,7 +125,9 @@
       };
     };
     exports.buttonList.forEach(function(args) {
-      return addStandardToggle(args);
+      if (area.visibleGuiControls[args.name]) {
+        return addStandardToggle(args);
+      }
     });
     return btnHash;
   };
@@ -212,7 +214,7 @@
 
 },{"./block.coffee":5,"./area_draw.coffee":3,"./positions/positions.coffee":11,"lodash":12}],13:[function(require,module,exports){
 (function() {
-  var $, areaClass, colors, draw, link, mouseTracker, resizer, rootElement, soundHelpers;
+  var $, area, areaClass, colors, draw, initialized, link, mouseTracker, resizer, rootElement, soundHelpers;
 
   link = require('./link.coffee');
 
@@ -279,13 +281,25 @@
 
   rootElement.css('height', '100%');
 
-  resizer.setToMaximum(exports.init({
+  area = {
     len: 300,
     blockSize: 0.02,
     playSlider: 0.09,
-    bpm: 15,
+    bpm: 6,
     isPlaying: false,
-    isLooping: false,
+    isLooping: true,
+    visibleGuiControls: {
+      isPlaying: true,
+      isLooping: true,
+      playSlider: true,
+      gridIsSnap_x: true,
+      gridIsShow_x: true,
+      gridIsSnap_y: true,
+      gridIsShow_y: true,
+      bpm: true,
+      len: true,
+      stateInput: true
+    },
     gridIsSnap_x: false,
     gridIsShow_x: false,
     gridIsSnap_y: true,
@@ -306,7 +320,15 @@
     },
     units: [],
     rootElement: rootElement
-  }));
+  };
+
+  area.rootElement = rootElement;
+
+  initialized = exports.init(area);
+
+  if (area.visibleGuiControls.len) {
+    resizer.setToMaximum(initialized);
+  }
 
 }).call(this);
 
@@ -350,12 +372,14 @@
     _.keys(btnHash).forEach(function(key) {
       return initButtonToSendMessage(key);
     });
-    resizerEl = resizer.init({
-      key: 'areaResize',
-      parent: area,
-      callbacks: callbacks
-    });
-    return resizerEl;
+    if (area.visibleGuiControls.len) {
+      resizerEl = resizer.init({
+        key: 'areaResize',
+        parent: area,
+        callbacks: callbacks
+      });
+      return resizerEl;
+    }
   };
 
 }).call(this);
@@ -16374,65 +16398,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],18:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":4,"./slider.coffee":9,"jquery-ui":19}],9:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params, callbacks, overrides) {
-    var cb, element, percision;
-    cb = function(old) {
-      return callbacks[params.key]({
-        area: params.parent,
-        old: old,
-        key: params.key
-      });
-    };
-    element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
-    element.css('width', params.parent.face.width());
-    percision = 100000;
-    element.slider({
-      min: 0,
-      max: overrides ? percision * overrides.max : percision,
-      change: function(event, ui) {
-        var old;
-        old = params.parent[params.key];
-        params.parent[params.key] = ui.value / percision;
-        return cb(old);
-      }
-    });
-    element.slider('option', 'value', params.parent[params.key] * percision);
-    return element;
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":4,"jquery-ui":19}],4:[function(require,module,exports){
+},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],4:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16457,7 +16423,67 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":17,"jquery-ui":19}],11:[function(require,module,exports){
+},{"jquery-ui":19,"jquery":17}],9:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    if (params.parent.visibleGuiControls[params.key]) {
+      cb = function(old) {
+        return callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
+      };
+      element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
+      element.css('width', params.parent.face.width());
+      percision = 100000;
+      element.slider({
+        min: 0,
+        max: overrides ? percision * overrides.max : percision,
+        change: function(event, ui) {
+          var old;
+          old = params.parent[params.key];
+          params.parent[params.key] = ui.value / percision;
+          return cb(old);
+        }
+      });
+      element.slider('option', 'value', params.parent[params.key] * percision);
+      return element;
+    }
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":4,"jquery-ui":19}],18:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":4,"./slider.coffee":9,"jquery-ui":19}],11:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16579,7 +16605,46 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":4,"../gui_builder.coffee":13,"jquery-ui":19,"jquery":17}],19:[function(require,module,exports){
+},{"../dom/draw.coffee":4,"../gui_builder.coffee":13,"jquery":17,"jquery-ui":19}],20:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('../dom/draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    if (params.parent.visibleGuiControls[params.key]) {
+      cb = function(old) {
+        return callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
+      };
+      element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
+      element.css('width', params.parent.face.width());
+      percision = 100000;
+      element.slider({
+        min: 0,
+        max: overrides ? percision * overrides.max : percision,
+        change: function(event, ui) {
+          var old;
+          old = params.parent[params.key];
+          params.parent[params.key] = ui.value / percision;
+          return cb(old);
+        }
+      });
+      element.slider('option', 'value', params.parent[params.key] * percision);
+      return element;
+    }
+  };
+
+}).call(this);
+
+
+},{"../dom/draw.coffee":4,"jquery-ui":19}],19:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31587,5 +31652,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":17}]},{},[10,3,5,1,7,4,9,18,13,14,2,15,11,6,8,16])
+},{"jquery":17}]},{},[10,3,5,1,7,4,9,18,13,14,2,15,11,6,8,16,20])
 ;

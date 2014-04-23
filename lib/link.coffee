@@ -13,7 +13,6 @@ exports.getGlobalCallbacks = ->
   window.callbacks
 
 exports.init = (area)->
-
   callbacks = exports.getGlobalCallbacks()
 
   btnHash = buttons.init(area)
@@ -40,12 +39,13 @@ exports.init = (area)->
 
   # Make sure this is called last.
   # After the initialization code, there's a call to resize to max possible size 
-  resizerEl = resizer.init(
-    key: 'areaResize'
-    parent: area
-    callbacks: callbacks
-  )
-  resizerEl
+  if (area.visibleGuiControls.len)
+    resizerEl = resizer.init(
+      key: 'areaResize'
+      parent: area
+      callbacks: callbacks
+    )
+    resizerEl
 
 
   

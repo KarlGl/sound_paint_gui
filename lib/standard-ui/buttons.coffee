@@ -31,6 +31,7 @@ exports.init = (area)->
 
   btnHash = {}
 
+  # Use this method to add each toggle button.
   addStandardToggle = (params)->
     btnHash[params.name] = (cb)->
       btnLib.init
@@ -41,6 +42,8 @@ exports.init = (area)->
         cb: cb
 
   exports.buttonList.forEach (args)->
-    addStandardToggle args 
+    # Only show if visible in the GUI is set.
+    if area.visibleGuiControls[args.name]
+      addStandardToggle args 
 
   btnHash
