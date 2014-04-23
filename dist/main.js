@@ -214,6 +214,60 @@
 
 },{"./block.coffee":5,"./area_draw.coffee":3,"./positions/positions.coffee":11,"lodash":12}],13:[function(require,module,exports){
 (function() {
+  var buttons, playSlider, resizer, sliderWithMaxAndMin, stateInput, _;
+
+  playSlider = require('./standard-ui/play_slider.coffee');
+
+  buttons = require('./standard-ui/buttons.coffee');
+
+  sliderWithMaxAndMin = require('./dom/slider_with_max.coffee');
+
+  resizer = require('./standard-ui/resizer.coffee');
+
+  _ = require('lodash');
+
+  stateInput = require('./standard-ui/textarea.coffee');
+
+  exports.getGlobalCallbacks = function() {
+    return window.callbacks;
+  };
+
+  exports.init = function(area) {
+    var btnHash, callbacks, initButtonToSendMessage, playSliderEl, resizerEl, speedSliderEl;
+    callbacks = exports.getGlobalCallbacks();
+    btnHash = buttons.init(area);
+    playSliderEl = playSlider.init(area, callbacks);
+    speedSliderEl = sliderWithMaxAndMin.init({
+      parent: area,
+      key: 'bpm'
+    }, callbacks);
+    initButtonToSendMessage = function(name) {
+      return btnHash[name](function(old) {
+        return callbacks[name]({
+          area: area,
+          old: old,
+          key: name
+        });
+      });
+    };
+    _.keys(btnHash).forEach(function(key) {
+      return initButtonToSendMessage(key);
+    });
+    if (area.visibleGuiControls.len) {
+      resizerEl = resizer.init({
+        key: 'areaResize',
+        parent: area,
+        callbacks: callbacks
+      });
+      return resizerEl;
+    }
+  };
+
+}).call(this);
+
+
+},{"./standard-ui/play_slider.coffee":8,"./standard-ui/buttons.coffee":6,"./dom/slider_with_max.coffee":14,"./standard-ui/resizer.coffee":15,"./standard-ui/textarea.coffee":16,"lodash":12}],17:[function(require,module,exports){
+(function() {
   var $, area, areaClass, colors, draw, initialized, link, mouseTracker, resizer, rootElement, soundHelpers;
 
   link = require('./link.coffee');
@@ -333,59 +387,7 @@
 }).call(this);
 
 
-},{"./link.coffee":14,"./area.coffee":10,"./dom/draw.coffee":4,"./mouse_tracker.coffee":15,"./standard-ui/resizer.coffee":16,"./color_theme.coffee":1,"jquery":17}],14:[function(require,module,exports){
-(function() {
-  var buttons, playSlider, resizer, sliderWithMaxAndMin, _;
-
-  playSlider = require('./standard-ui/play_slider.coffee');
-
-  buttons = require('./standard-ui/buttons.coffee');
-
-  sliderWithMaxAndMin = require('./dom/slider_with_max.coffee');
-
-  resizer = require('./standard-ui/resizer.coffee');
-
-  _ = require('lodash');
-
-  exports.getGlobalCallbacks = function() {
-    return window.callbacks;
-  };
-
-  exports.init = function(area) {
-    var btnHash, callbacks, initButtonToSendMessage, playSliderEl, resizerEl, speedSliderEl;
-    callbacks = exports.getGlobalCallbacks();
-    btnHash = buttons.init(area);
-    playSliderEl = playSlider.init(area, callbacks);
-    speedSliderEl = sliderWithMaxAndMin.init({
-      parent: area,
-      key: 'bpm'
-    }, callbacks);
-    initButtonToSendMessage = function(name) {
-      return btnHash[name](function(old) {
-        return callbacks[name]({
-          area: area,
-          old: old,
-          key: name
-        });
-      });
-    };
-    _.keys(btnHash).forEach(function(key) {
-      return initButtonToSendMessage(key);
-    });
-    if (area.visibleGuiControls.len) {
-      resizerEl = resizer.init({
-        key: 'areaResize',
-        parent: area,
-        callbacks: callbacks
-      });
-      return resizerEl;
-    }
-  };
-
-}).call(this);
-
-
-},{"./standard-ui/play_slider.coffee":8,"./standard-ui/buttons.coffee":6,"./dom/slider_with_max.coffee":18,"./standard-ui/resizer.coffee":16,"lodash":12}],15:[function(require,module,exports){
+},{"./link.coffee":13,"./area.coffee":10,"./dom/draw.coffee":4,"./mouse_tracker.coffee":18,"./standard-ui/resizer.coffee":15,"./color_theme.coffee":1,"jquery":19}],18:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -454,7 +456,295 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":1,"./dom/draw.coffee":4,"lodash":12,"jquery":17}],12:[function(require,module,exports){
+},{"./color_theme.coffee":1,"./dom/draw.coffee":4,"lodash":12,"jquery":19}],9:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    if (params.parent.visibleGuiControls[params.key]) {
+      cb = function(old) {
+        return callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
+      };
+      element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
+      element.css('width', params.parent.face.width());
+      percision = 100000;
+      element.slider({
+        min: 0,
+        max: overrides ? percision * overrides.max : percision,
+        change: function(event, ui) {
+          var old;
+          old = params.parent[params.key];
+          params.parent[params.key] = ui.value / percision;
+          return cb(old);
+        }
+      });
+      element.slider('option', 'value', params.parent[params.key] * percision);
+      return element;
+    }
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":4,"jquery-ui":20}],7:[function(require,module,exports){
+(function() {
+  var colors, draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  colors = require('../color_theme.coffee');
+
+  colors = colors.colors;
+
+  exports.init = function(params) {
+    var btn, set, size;
+    btn = draw.draw("<div id=\"" + params.id + "\">" + params.inner + "</div>", params.parent.container);
+    size = 30;
+    btn.css('height', size);
+    btn.addClass('btn');
+    set = function(v) {
+      var old;
+      if (params.parent[params.key] !== v) {
+        old = params.parent[params.key];
+        params.parent[params.key] = v;
+        params.cb(old);
+      }
+      if (params.parent[params.key]) {
+        btn.addClass('btn-on');
+        return btn.css('background-color', colors.active);
+      } else {
+        btn.addClass('btn-off');
+        return btn.css('background-color', colors.inactive);
+      }
+    };
+    set(params.parent[params.key]);
+    return btn.click(function() {
+      return set(!params.parent[params.key]);
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":20}],14:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":4,"./slider.coffee":9,"jquery-ui":20}],4:[function(require,module,exports){
+(function() {
+  var $, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  exports.draw = function(child, parent) {
+    var c;
+    if (parent == null) {
+      parent = $('.sound-paint');
+    }
+    c = $(child);
+    parent.append(c);
+    return c;
+  };
+
+  if (typeof window !== 'undefined') {
+    window.jq = $;
+  }
+
+}).call(this);
+
+
+},{"jquery":19,"jquery-ui":20}],16:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('../dom/draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    if (params.parent.visibleGuiControls[params.key]) {
+      cb = function(old) {
+        return callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
+      };
+      element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
+      element.css('width', params.parent.face.width());
+      percision = 100000;
+      element.slider({
+        min: 0,
+        max: overrides ? percision * overrides.max : percision,
+        change: function(event, ui) {
+          var old;
+          old = params.parent[params.key];
+          params.parent[params.key] = ui.value / percision;
+          return cb(old);
+        }
+      });
+      element.slider('option', 'value', params.parent[params.key] * percision);
+      return element;
+    }
+  };
+
+}).call(this);
+
+
+},{"../dom/draw.coffee":4,"jquery-ui":20}],11:[function(require,module,exports){
+(function() {
+  var _;
+
+  _ = require('lodash');
+
+  exports.isInBox = function(pos, box) {
+    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
+      return exports.amountInBox(pos, box);
+    }
+  };
+
+  exports.snapToGrid = function(pos, gridCellSize) {
+    return {
+      x: gridCellSize * Math.round(pos.x / gridCellSize),
+      y: gridCellSize * Math.round(pos.y / gridCellSize)
+    };
+  };
+
+  exports.snapToGridFromEquation = function(pos, equation) {
+    var getClosest, oneOver, trunc;
+    getClosest = function(n, closest) {
+      if (closest == null) {
+        closest = 0;
+      }
+      if (equation(n) < pos) {
+        return getClosest(n + 1, equation(n));
+      } else {
+        return [n, closest];
+      }
+    };
+    trunc = getClosest(0);
+    oneOver = equation(trunc[0]);
+    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
+      return oneOver;
+    } else {
+      return trunc[1];
+    }
+  };
+
+  exports.isIn = function(arr, pos) {
+    return _.some(arr, function(item) {
+      return _.isEqual(pos, item);
+    });
+  };
+
+  exports.amountInBox = function(pos, box) {
+    var inboxx, inboxy;
+    inboxx = pos.x - box.left;
+    inboxy = pos.y - box.top;
+    return {
+      x: inboxx / (box.right - box.left),
+      y: 1 - (inboxy / (box.bottom - box.top))
+    };
+  };
+
+  window.positionLib = exports;
+
+}).call(this);
+
+
+},{"lodash":12}],15:[function(require,module,exports){
+(function() {
+  var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, guiInit, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  draw = require('../dom/draw.coffee');
+
+  guiInit = require('../gui_builder.coffee');
+
+  BOTTOM_CONTROL_SIZE = 100;
+
+  RIGHT_CONTROL_SIZE = 10;
+
+  exports.setToMaximum = function(element) {
+    var largest, root;
+    largest = Math.min((root = element.params.parent.rootElement).width() - RIGHT_CONTROL_SIZE, root.height() - BOTTOM_CONTROL_SIZE);
+    if (element.params.parent['len'] !== largest) {
+      element.val(largest);
+      return exports.dealWithChange(element, largest);
+    }
+  };
+
+  exports.dealWithChange = function(element, val) {
+    var old;
+    old = element.params.parent['len'];
+    element.params.parent['len'] = parseInt(val);
+    element.params.cb(old);
+    return guiInit.init(element.params.parent);
+  };
+
+  exports.init = function(params) {
+    var element, elementMaximize;
+    element = draw.draw("<input type=\"number\" class=\"resize\">", params.parent.container);
+    elementMaximize = draw.draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", params.parent.container);
+    element.val(params.parent['len']);
+    element.css('width', 46);
+    element.params = {
+      parent: params.parent,
+      cb: function(old) {
+        return params.callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
+      }
+    };
+    elementMaximize.click(function() {
+      return exports.setToMaximum(element);
+    });
+    element.change(function(event) {
+      return exports.dealWithChange(element, event.target.value);
+    });
+    return element;
+  };
+
+}).call(this);
+
+
+},{"../dom/draw.coffee":4,"../gui_builder.coffee":17,"jquery":19,"jquery-ui":20}],12:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7242,7 +7532,7 @@
 }.call(this));
 
 })(window)
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16356,295 +16646,7 @@ return jQuery;
 }));
 
 })()
-},{}],7:[function(require,module,exports){
-(function() {
-  var colors, draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  colors = require('../color_theme.coffee');
-
-  colors = colors.colors;
-
-  exports.init = function(params) {
-    var btn, set, size;
-    btn = draw.draw("<div id=\"" + params.id + "\">" + params.inner + "</div>", params.parent.container);
-    size = 30;
-    btn.css('height', size);
-    btn.addClass('btn');
-    set = function(v) {
-      var old;
-      if (params.parent[params.key] !== v) {
-        old = params.parent[params.key];
-        params.parent[params.key] = v;
-        params.cb(old);
-      }
-      if (params.parent[params.key]) {
-        btn.addClass('btn-on');
-        return btn.css('background-color', colors.active);
-      } else {
-        btn.addClass('btn-off');
-        return btn.css('background-color', colors.inactive);
-      }
-    };
-    set(params.parent[params.key]);
-    return btn.click(function() {
-      return set(!params.parent[params.key]);
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":4,"../color_theme.coffee":1,"jquery-ui":19}],4:[function(require,module,exports){
-(function() {
-  var $, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  exports.draw = function(child, parent) {
-    var c;
-    if (parent == null) {
-      parent = $('.sound-paint');
-    }
-    c = $(child);
-    parent.append(c);
-    return c;
-  };
-
-  if (typeof window !== 'undefined') {
-    window.jq = $;
-  }
-
-}).call(this);
-
-
-},{"jquery-ui":19,"jquery":17}],9:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params, callbacks, overrides) {
-    var cb, element, percision;
-    if (params.parent.visibleGuiControls[params.key]) {
-      cb = function(old) {
-        return callbacks[params.key]({
-          area: params.parent,
-          old: old,
-          key: params.key
-        });
-      };
-      element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
-      element.css('width', params.parent.face.width());
-      percision = 100000;
-      element.slider({
-        min: 0,
-        max: overrides ? percision * overrides.max : percision,
-        change: function(event, ui) {
-          var old;
-          old = params.parent[params.key];
-          params.parent[params.key] = ui.value / percision;
-          return cb(old);
-        }
-      });
-      element.slider('option', 'value', params.parent[params.key] * percision);
-      return element;
-    }
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":4,"jquery-ui":19}],18:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":4,"./slider.coffee":9,"jquery-ui":19}],11:[function(require,module,exports){
-(function() {
-  var _;
-
-  _ = require('lodash');
-
-  exports.isInBox = function(pos, box) {
-    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
-      return exports.amountInBox(pos, box);
-    }
-  };
-
-  exports.snapToGrid = function(pos, gridCellSize) {
-    return {
-      x: gridCellSize * Math.round(pos.x / gridCellSize),
-      y: gridCellSize * Math.round(pos.y / gridCellSize)
-    };
-  };
-
-  exports.snapToGridFromEquation = function(pos, equation) {
-    var getClosest, oneOver, trunc;
-    getClosest = function(n, closest) {
-      if (closest == null) {
-        closest = 0;
-      }
-      if (equation(n) < pos) {
-        return getClosest(n + 1, equation(n));
-      } else {
-        return [n, closest];
-      }
-    };
-    trunc = getClosest(0);
-    oneOver = equation(trunc[0]);
-    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
-      return oneOver;
-    } else {
-      return trunc[1];
-    }
-  };
-
-  exports.isIn = function(arr, pos) {
-    return _.some(arr, function(item) {
-      return _.isEqual(pos, item);
-    });
-  };
-
-  exports.amountInBox = function(pos, box) {
-    var inboxx, inboxy;
-    inboxx = pos.x - box.left;
-    inboxy = pos.y - box.top;
-    return {
-      x: inboxx / (box.right - box.left),
-      y: 1 - (inboxy / (box.bottom - box.top))
-    };
-  };
-
-  window.positionLib = exports;
-
-}).call(this);
-
-
-},{"lodash":12}],16:[function(require,module,exports){
-(function() {
-  var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, guiInit, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  draw = require('../dom/draw.coffee');
-
-  guiInit = require('../gui_builder.coffee');
-
-  BOTTOM_CONTROL_SIZE = 100;
-
-  RIGHT_CONTROL_SIZE = 10;
-
-  exports.setToMaximum = function(element) {
-    var largest, root;
-    largest = Math.min((root = element.params.parent.rootElement).width() - RIGHT_CONTROL_SIZE, root.height() - BOTTOM_CONTROL_SIZE);
-    if (element.params.parent['len'] !== largest) {
-      element.val(largest);
-      return exports.dealWithChange(element, largest);
-    }
-  };
-
-  exports.dealWithChange = function(element, val) {
-    var old;
-    old = element.params.parent['len'];
-    element.params.parent['len'] = parseInt(val);
-    element.params.cb(old);
-    return guiInit.init(element.params.parent);
-  };
-
-  exports.init = function(params) {
-    var element, elementMaximize;
-    element = draw.draw("<input type=\"number\" class=\"resize\">", params.parent.container);
-    elementMaximize = draw.draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", params.parent.container);
-    element.val(params.parent['len']);
-    element.css('width', 46);
-    element.params = {
-      parent: params.parent,
-      cb: function(old) {
-        return params.callbacks[params.key]({
-          area: params.parent,
-          old: old,
-          key: params.key
-        });
-      }
-    };
-    elementMaximize.click(function() {
-      return exports.setToMaximum(element);
-    });
-    element.change(function(event) {
-      return exports.dealWithChange(element, event.target.value);
-    });
-    return element;
-  };
-
-}).call(this);
-
-
-},{"../dom/draw.coffee":4,"../gui_builder.coffee":13,"jquery":17,"jquery-ui":19}],20:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('../dom/draw.coffee');
-
-  exports.init = function(params, callbacks, overrides) {
-    var cb, element, percision;
-    if (params.parent.visibleGuiControls[params.key]) {
-      cb = function(old) {
-        return callbacks[params.key]({
-          area: params.parent,
-          old: old,
-          key: params.key
-        });
-      };
-      element = draw.draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
-      element.css('width', params.parent.face.width());
-      percision = 100000;
-      element.slider({
-        min: 0,
-        max: overrides ? percision * overrides.max : percision,
-        change: function(event, ui) {
-          var old;
-          old = params.parent[params.key];
-          params.parent[params.key] = ui.value / percision;
-          return cb(old);
-        }
-      });
-      element.slider('option', 'value', params.parent[params.key] * percision);
-      return element;
-    }
-  };
-
-}).call(this);
-
-
-},{"../dom/draw.coffee":4,"jquery-ui":19}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31652,5 +31654,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":17}]},{},[10,3,5,1,7,4,9,18,13,14,2,15,11,6,8,16,20])
+},{"jquery":19}]},{},[10,3,5,1,7,4,9,14,17,13,2,18,11,6,8,15,16])
 ;

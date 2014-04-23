@@ -1,26 +1,12 @@
 <html>
 <head>
-  <link rel="stylesheet" href="node_modules/jquery-ui/themes/base/jquery-ui.css">
-  <style>
-    body {
-      -webkit-user-select: none;
-    }
-    .btn {
-      cursor: pointer;
-      display: inline-block;
-      margin: 4px;
-    }
-    .play-indicator {
-      display: block;
-      width: 1px;
-      position: absolute;
-    }
-  </style>
+  <link rel="stylesheet" href="dist/jquery-ui.min.css">
+  <link rel="stylesheet" href="lib/css/index.css">
 </head>
 <body style="margin: 0px;">
 <!-- try and load from loacal. -->
     <script src="../sound_paint/dist/main.js"></script>
-<!-- Load from the net -->
+<!-- Load from the net, but take preference to the local one... -->
     <script src="http://karlgl.github.io/sound_paint/dist/main.js"></script>
     
     <script src="./dist/main.js"></script>

@@ -8,6 +8,7 @@ buttons = require './standard-ui/buttons.coffee'
 sliderWithMaxAndMin = require './dom/slider_with_max.coffee'
 resizer = require './standard-ui/resizer.coffee'
 _ = require 'lodash'
+stateInput = require './standard-ui/textarea.coffee'
 
 exports.getGlobalCallbacks = ->
   window.callbacks
@@ -17,7 +18,14 @@ exports.init = (area)->
 
   btnHash = buttons.init(area)
 
-# SLIDERS
+  # Draw state input box.
+  # stateInput.init(
+  #     parent: area,
+  #     key: 'stateInput',
+  #   , callbacks
+  # )
+
+  # SLIDERS
   playSliderEl = playSlider.init(area, callbacks)
   speedSliderEl = sliderWithMaxAndMin.init(
       parent: area,
@@ -46,7 +54,3 @@ exports.init = (area)->
       callbacks: callbacks
     )
     resizerEl
-
-
-  
-

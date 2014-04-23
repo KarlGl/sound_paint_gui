@@ -1,0 +1,14 @@
+/* Use CSS from your node_modules folder */
+body {
+  -webkit-user-select: none;
+}
+.btn {
+  cursor: pointer;
+  display: inline-block;
+  margin: 4px;
+}
+.play-indicator {
+  display: block;
+  width: 1px;
+  position: absolute;
+}
