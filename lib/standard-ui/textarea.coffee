@@ -1,38 +1,40 @@
 
 ui = require 'jquery-ui';
 draw = require '../dom/draw.coffee'
+guiInit = require '../gui_builder.coffee'
 
-exports.init = (params, callbacks, overrides)->
+exports.dealWithChange = (element, val)->
+    old = null
+    console.log("Reloading from state box")
+    #
+    # change what needs to be changed in the area.
+    #
+    
+    console.log(val)
+    element.params.cb(old)
+
+    # re init the whole app with those changes.
+    guiInit.init(element.params.parent)
+
+exports.init = (params)->
 
   if params.parent.visibleGuiControls[params.key]
-    cb = (old)->
-      callbacks[params.key](
-        area: params.parent
-        old: old
-        key: params.key
-      )
+    element = draw.draw("<textarea class=\"#{params.key}\">", params.parent.container)
 
-    element = draw.draw("<div id=\"#{params.key}\"></div>", params.parent.container)
+      
+    element.params = 
+      parent: params.parent
+      cb: (old)->
+        params.callbacks[params.key](
+          area: params.parent
+          old: old
+          key: params.key
+        )
 
     element.css('width', params.parent.face.width())
+    element.css('height', 130)
 
-    percision = 100000
-    element.slider({
-        min: 0,
-        max: 
-          if overrides
-            percision * overrides.max
-          else
-            percision
-        change: ( event, ui )->
-          old = params.parent[params.key]
-          params.parent[params.key] = 
-              ui.value / percision
-
-          # need a way to set value without triggering this.
-          cb(old)
-    })
-    # do here so change will get called
-    element.slider('option', 'value', params.parent[params.key] * percision)
+    element.change (event)->
+      exports.dealWithChange(element, event.target.value)
     element
 
