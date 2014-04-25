@@ -30,6 +30,7 @@ module.exports =
           tools: (require './standard-ui/tools.coffee')
           resizer: (require './standard-ui/resizer.coffee')
           saveLoad: (require './standard-ui/save_load.coffee')
+          exclusiveButton: (require './standard-ui/exclusive_button.coffee')
         }, this.requireAndInit.bind(this)
 
       this.guiBuilder = require './sound_draw_gui.coffee' 
@@ -60,6 +61,9 @@ module.exports =
           # Many of these have to be before 'link'
           #
           'link'
+          # must be before tools
+          'exclusiveButton'
+
           'tools'
           'mouseTracker'
         ].forEach (key)->

@@ -55,12 +55,17 @@
     gridIsSnap_y: true,
     gridIsShow_y: true,
     units: [],
-    tools: ['pen'],
+    tools: [
+      {
+        name: 'pen'
+      }, {
+        name: 'waveforms'
+      }
+    ],
     toolActive: 'pen',
-    optionActive: 'sin',
+    optionActive: 'sqr',
     waveforms: [
       {
-        active: true,
         name: 'sin',
         color: "#6a00ff"
       }, {
@@ -140,19 +145,71 @@
     return {
       init: function(area) {
         return {
+          "new": function(params) {
+            var tool;
+            tool = {
+              name: params.name,
+              element: area.app.draw("<div class=\"btn tool " + params.name + "\">" + params.name + "</div>", params.container),
+              set: function(isActive) {
+                if (isActive) {
+                  this.element.removeClass('btn-off');
+                  this.element.addClass('btn-on');
+                  area.state["" + params.key + "Active"] = this.name;
+                  area.app.saveLoad.renderState();
+                  return params.cssActive.call(this);
+                } else {
+                  this.element.removeClass('btn-on');
+                  this.element.addClass('btn-off');
+                  return params.cssInactive.call(this);
+                }
+              },
+              pickADefault: function() {
+                var name;
+                if ((name = area.state["" + params.key + "Active"])) {
+                  if (this.name === name) {
+                    return this.set(true);
+                  }
+                }
+              }
+            };
+            tool.element.click(function() {
+              params.coll.forEach(function(tool) {
+                return tool.set(false);
+              });
+              return tool.set(true);
+            });
+            tool.pickADefault();
+            params.coll.push(tool);
+            return tool;
+          }
+        };
+      }
+    };
+  };
+
+}).call(this);
+
+
+},{}],9:[function(require,module,exports){
+(function() {
+  exports.init = function(app) {
+    return {
+      init: function(area) {
+        return {
           dealWithChange: function(val) {
             var old;
             old = null;
             console.log("Reloading from state box");
-            area.state = json.parse(val);
+            area.state = area.app.json.parse(val);
             area.stateTextArea.params.cb(old);
-            return area.restart();
+            return area.restartGUI();
           },
           renderState: function() {
             return area.stateTextArea.val(area.app.json.stringify(area.state));
           },
           init: function(params) {
-            var element;
+            var element,
+              _this = this;
             if (area.state.visibleGuiControls[params.key]) {
               element = area.app.draw("<textarea class=\"" + params.key + "\">", area.container);
               area.stateTextArea = element;
@@ -170,7 +227,7 @@
               element.css('width', area.face.width());
               element.css('height', 130);
               element.change(function(event) {
-                return exports.dealWithChange(event.target.value);
+                return _this.dealWithChange(event.target.value);
               });
               return element;
             }
@@ -183,89 +240,53 @@
 }).call(this);
 
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function() {
   exports.init = function(app) {
     return {
       init: function(area) {
-        var name;
         area.tools = [];
         area.toolCt = app.draw("<div class=\"toolCt\"></div>", area.container).css('border', "" + app.colors.active + " 1px solid").css('background-color', app.colors.barelyThere);
-        area.state.tools.forEach(function(toolName) {
+        area.state.tools.forEach(function(toolConfig) {
           var tool;
-          tool = {};
-          tool.name = toolName;
-          tool.set = function(isActive) {
-            if (isActive) {
-              this.element.removeClass('btn-off');
-              this.element.addClass('btn-on');
-              area.state.toolActive = this.name;
-              area.app.saveLoad.renderState();
-              return this.element.css('background-color', app.colors.active);
-            } else {
-              this.element.removeClass('btn-on');
-              this.element.addClass('btn-off');
-              return this.element.css('background-color', app.colors.inactive);
-            }
-          };
-          tool.exclusiveOptions = [];
-          if (toolName === 'pen') {
-            tool.exclusiveOptions = area.state.waveforms;
+          tool = area.app.exclusiveButton["new"]({
+            name: toolConfig.name,
+            key: 'tool',
+            cssActive: function() {
+              return this.element.css('background-color', area.app.colors.active);
+            },
+            cssInactive: function() {
+              return this.element.css('background-color', area.app.colors.inactive);
+            },
+            container: area.toolCt,
+            coll: area.tools
+          });
+          if (tool.name === 'pen') {
+            return tool.exclusiveOptions = area.state.waveforms;
+          } else {
+            return tool.exclusiveOptions = [];
           }
-          tool.element = app.draw("<div class=\"btn tool " + toolName + "\">" + toolName + "</div>", area.toolCt);
-          return area.tools.push(tool);
         });
         area.toolExclusiveOptionsCt = app.draw("<div class=\"waveCt\"></div>", area.toolCt).css('border', "" + app.colors.active + " 1px solid").css('background-color', app.colors.inactive);
-        area.tools.forEach(function(tool) {
-          var ar, name;
+        return area.tools.forEach(function(tool) {
           tool.exclusiveOptionInstances = [];
-          tool.exclusiveOptions.forEach(function(optionConfig) {
+          return tool.exclusiveOptions.forEach(function(optionConfig) {
             var option;
-            option = {};
-            option.name = optionConfig.name;
-            option.active = false;
-            option.set = function(isActive) {
-              if (isActive) {
-                this.element.removeClass('btn-off');
-                this.element.addClass('btn-on');
-                area.state.optionActive = this.name;
-                area.app.saveLoad.renderState();
+            option = area.app.exclusiveButton["new"]({
+              name: optionConfig.name,
+              key: 'option',
+              cssActive: function() {
                 return this.element.css("border", "" + app.colors.active + " 6px solid");
-              } else {
-                this.element.removeClass('btn-on');
-                this.element.addClass('btn-off');
+              },
+              cssInactive: function() {
                 return this.element.css("border", "none");
-              }
-            };
-            option.element = app.draw("<div class=\"option btn\">" + optionConfig.name + "</div>", area.toolExclusiveOptionsCt).css('background-color', optionConfig.color).css('color', 'white');
-            option.element.click(function() {
-              tool.exclusiveOptionInstances.forEach(function(option) {
-                return option.set(false);
-              });
-              return option.set(true);
+              },
+              container: area.toolExclusiveOptionsCt,
+              coll: tool.exclusiveOptionInstances
             });
-            return tool.exclusiveOptionInstances.push(option);
-          });
-          if ((ar = tool.exclusiveOptionInstances).length) {
-            ar[0].set(true);
-          }
-          if ((name = area.state.optionActive)) {
-            app._.find(tool.exclusiveOptionInstances, function(option) {
-              return option.name === name;
-            }).set(true);
-          }
-          return tool.element.click(function() {
-            area.tools.forEach(function(tool) {
-              return tool.set(false);
-            });
-            return tool.set(true);
+            return option.element.css('background-color', optionConfig.color).css('color', 'white');
           });
         });
-        if ((name = area.state.toolActive)) {
-          return app._.find(area.tools, function(tool) {
-            return tool.name === name;
-          }).set(true);
-        }
       }
     };
   };
@@ -273,7 +294,7 @@
 }).call(this);
 
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function() {
   var draw;
 
@@ -360,7 +381,7 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":11}],12:[function(require,module,exports){
+},{"./dom/draw.coffee":12}],13:[function(require,module,exports){
 (function() {
   var positionLib;
 
@@ -420,7 +441,7 @@
 }).call(this);
 
 
-},{"./positions/positions.coffee":13}],14:[function(require,module,exports){
+},{"./positions/positions.coffee":14}],15:[function(require,module,exports){
 (function() {
   var buttons, playSlider, sliderWithMaxAndMin;
 
@@ -477,7 +498,7 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":15,"./standard-ui/buttons.coffee":16,"./dom/slider_with_max.coffee":17}],18:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":16,"./standard-ui/buttons.coffee":17,"./dom/slider_with_max.coffee":18}],19:[function(require,module,exports){
 (function() {
   var app;
 
@@ -505,7 +526,7 @@
 }).call(this);
 
 
-},{"./app.coffee":19}],16:[function(require,module,exports){
+},{"./app.coffee":20}],17:[function(require,module,exports){
 (function() {
   var btnLib;
 
@@ -558,7 +579,7 @@
 }).call(this);
 
 
-},{"../dom/btn.coffee":20}],15:[function(require,module,exports){
+},{"../dom/btn.coffee":21}],16:[function(require,module,exports){
 (function() {
   var slider;
 
@@ -576,7 +597,7 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":21}],19:[function(require,module,exports){
+},{"../dom/slider.coffee":22}],20:[function(require,module,exports){
 (function() {
   var _;
 
@@ -600,7 +621,8 @@
         link: require('./link.coffee'),
         tools: require('./standard-ui/tools.coffee'),
         resizer: require('./standard-ui/resizer.coffee'),
-        saveLoad: require('./standard-ui/save_load.coffee')
+        saveLoad: require('./standard-ui/save_load.coffee'),
+        exclusiveButton: require('./standard-ui/exclusive_button.coffee')
       }, this.requireAndInit.bind(this));
       this.guiBuilder = require('./sound_draw_gui.coffee');
       this.draw = require('./dom/draw.coffee');
@@ -612,7 +634,7 @@
         area.app.requireAndInit = function(key) {
           return this[key] = this[key].init(area);
         };
-        return ['areaDraw', 'areaUnits', 'block', 'resizer', 'saveLoad', 'link', 'tools', 'mouseTracker'].forEach(function(key) {
+        return ['areaDraw', 'areaUnits', 'block', 'resizer', 'saveLoad', 'link', 'exclusiveButton', 'tools', 'mouseTracker'].forEach(function(key) {
           return area.app.requireAndInit(key);
         });
       };
@@ -622,7 +644,7 @@
 }).call(this);
 
 
-},{"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./mouse_tracker.coffee":22,"./positions/grid_equations.coffee":7,"./area_draw.coffee":10,"./area_units.coffee":12,"./block.coffee":1,"./link.coffee":14,"./standard-ui/tools.coffee":9,"./standard-ui/resizer.coffee":23,"./standard-ui/save_load.coffee":8,"./sound_draw_gui.coffee":18,"./dom/draw.coffee":11,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"lodash":24,"jquery":25}],22:[function(require,module,exports){
+},{"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./mouse_tracker.coffee":23,"./positions/grid_equations.coffee":7,"./area_draw.coffee":11,"./area_units.coffee":13,"./block.coffee":1,"./link.coffee":15,"./standard-ui/tools.coffee":10,"./standard-ui/resizer.coffee":24,"./standard-ui/save_load.coffee":9,"./standard-ui/exclusive_button.coffee":8,"./sound_draw_gui.coffee":19,"./dom/draw.coffee":12,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"lodash":25,"jquery":26}],23:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -694,7 +716,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":11,"lodash":24,"jquery":25}],24:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":12,"lodash":25,"jquery":26}],25:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7482,7 +7504,7 @@
 }.call(this));
 
 })(window)
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16596,7 +16618,7 @@ return jQuery;
 }));
 
 })()
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function() {
   var colors, draw, size, ui;
 
@@ -16637,7 +16659,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":11,"../color_theme.coffee":2,"jquery-ui":26}],11:[function(require,module,exports){
+},{"./draw.coffee":12,"../color_theme.coffee":2,"jquery-ui":27}],12:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16662,7 +16684,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":25,"jquery-ui":26}],21:[function(require,module,exports){
+},{"jquery-ui":27,"jquery":26}],22:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16701,7 +16723,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":11,"jquery-ui":26}],17:[function(require,module,exports){
+},{"./draw.coffee":12,"jquery-ui":27}],18:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16722,7 +16744,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":11,"./slider.coffee":21,"jquery-ui":26}],13:[function(require,module,exports){
+},{"./draw.coffee":12,"./slider.coffee":22,"jquery-ui":27}],14:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16783,7 +16805,7 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":24}],23:[function(require,module,exports){
+},{"lodash":25}],24:[function(require,module,exports){
 (function() {
   var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, ui;
 
@@ -16854,7 +16876,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":11,"jquery":25,"jquery-ui":26}],26:[function(require,module,exports){
+},{"../dom/draw.coffee":12,"jquery":26,"jquery-ui":27}],27:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31862,5 +31884,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":25}]},{},[19,10,12,1,2,3,20,11,4,5,21,17,14,6,22,7,13,18,16,15,23,8,9])
+},{"jquery":26}]},{},[20,11,13,1,2,3,21,12,4,5,22,18,15,6,23,7,14,19,17,8,16,24,9,10])
 ;
