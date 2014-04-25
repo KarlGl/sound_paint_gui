@@ -5,7 +5,7 @@ draw = require '../dom/draw.coffee'
 guiInit = require '../gui_builder.coffee'
 
 # Size of the controls to add onto canvas size
-BOTTOM_CONTROL_SIZE = 230
+BOTTOM_CONTROL_SIZE = 280
 RIGHT_CONTROL_SIZE = 20
 
 exports.setToMaximum = (element)->

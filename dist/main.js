@@ -88,6 +88,128 @@
 
 },{"./dom/draw.coffee":6,"./color_theme.coffee":2,"./block.coffee":1}],7:[function(require,module,exports){
 (function() {
+  var app;
+
+  app = require('./app.coffee');
+
+  exports.init = function(area) {
+    var fillFuncs, resizerEl;
+    if ((area.container != null)) {
+      area.container.remove();
+    }
+    area.container = app.draw("<div class=\"area-ct\"></div>");
+    area = app.areaClass.init(area);
+    area.restart = function() {
+      return exports.init(area);
+    };
+    fillFuncs = {
+      x: function(point) {
+        return area.context.fillRect(point, 0, 1, area.state.len);
+      },
+      y: function(point) {
+        return area.context.fillRect(0, area.state.len - point, area.state.len, 1);
+      }
+    };
+    ['x', 'y'].forEach(function(axis) {
+      var fill, hash;
+      hash = area.grid[axis];
+      if (area.state['gridIsShow_' + axis]) {
+        area.context.fillStyle = app.colors.inactive;
+        fill = function(n) {
+          var pos;
+          if ((pos = hash.get(n)) < 1) {
+            fillFuncs[axis](pos * area.state.len);
+            return fill(n + 1);
+          }
+        };
+        return fill(0);
+      }
+    });
+    resizerEl = app.link.init(area);
+    tools.init(area);
+    app.mouseTracker.init({
+      size: 10,
+      callbacks: area.mouseCallbacks
+    });
+    return resizerEl;
+  };
+
+  exports.initProgram = function() {
+    var area, initialized, rootElement, startState;
+    app.require();
+    rootElement = app.draw("<div class=\"sound-paint\"></div>", app.$('body'));
+    rootElement.css('width', '100%');
+    rootElement.css('height', '100%');
+    startState = {
+      len: 300,
+      blockSize: 0.02,
+      playSlider: 0.09,
+      bpm: 6,
+      isPlaying: false,
+      isLooping: true,
+      visibleGuiControls: {
+        isPlaying: true,
+        isLooping: true,
+        playSlider: true,
+        gridIsSnap_x: true,
+        gridIsShow_x: true,
+        gridIsSnap_y: true,
+        gridIsShow_y: true,
+        bpm: true,
+        len: true,
+        stateInput: true
+      },
+      gridIsSnap_x: false,
+      gridIsShow_x: false,
+      gridIsSnap_y: true,
+      gridIsShow_y: true,
+      units: [],
+      tools: ['pen'],
+      toolActive: 'pen',
+      optionActive: 'sin',
+      waveforms: [
+        {
+          active: true,
+          name: 'sin',
+          color: "#6a00ff"
+        }, {
+          name: 'sqr',
+          color: "#0000ff"
+        }
+      ]
+    };
+    area = {
+      rootElement: rootElement,
+      grid: {
+        x: {
+          get: function(n) {
+            return 1 / 16 * n;
+          }
+        },
+        y: {
+          get: function(n) {
+            var b;
+            b = Math.pow(1.059463, n);
+            return app.soundHelpers.humanEar.freqToRange(27.5 * b);
+          }
+        }
+      },
+      startState: startState,
+      state: startState
+    };
+    initialized = exports.init(area);
+    if (area.state.visibleGuiControls.len) {
+      return resizer.setToMaximum(initialized);
+    }
+  };
+
+  setTimeout(exports.initProgram, 0);
+
+}).call(this);
+
+
+},{"./app.coffee":8}],9:[function(require,module,exports){
+(function() {
   var btnLib;
 
   btnLib = require('../dom/btn.coffee');
@@ -139,7 +261,7 @@
 }).call(this);
 
 
-},{"../dom/btn.coffee":8}],9:[function(require,module,exports){
+},{"../dom/btn.coffee":10}],11:[function(require,module,exports){
 (function() {
   var slider;
 
@@ -157,7 +279,131 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":10}],11:[function(require,module,exports){
+},{"../dom/slider.coffee":12}],13:[function(require,module,exports){
+(function() {
+  var app;
+
+  app = require('../app.coffee');
+
+  exports.init = function(area) {
+    var name;
+    area.tools = [];
+    area.toolCt = app.draw("<div class=\"toolCt\"></div>", area.container).css('border', "" + app.colors.active + " 1px solid").css('background-color', app.colors.barelyThere);
+    area.state.tools.forEach(function(toolName) {
+      var tool;
+      tool = {};
+      tool.name = toolName;
+      tool.set = function(isActive) {
+        if (isActive) {
+          this.element.removeClass('btn-off');
+          this.element.addClass('btn-on');
+          area.state.toolActive = this.name;
+          return this.element.css('background-color', app.colors.active);
+        } else {
+          this.element.removeClass('btn-on');
+          this.element.addClass('btn-off');
+          return this.element.css('background-color', app.colors.inactive);
+        }
+      };
+      tool.exclusiveOptions = [];
+      if (toolName === 'pen') {
+        tool.exclusiveOptions = area.state.waveforms;
+      }
+      tool.element = app.draw("<div class=\"btn tool " + toolName + "\">" + toolName + "</div>", area.toolCt);
+      return area.tools.push(tool);
+    });
+    area.toolExclusiveOptionsCt = app.draw("<div class=\"waveCt\"></div>", area.toolCt).css('border', "" + app.colors.active + " 1px solid").css('background-color', app.colors.inactive);
+    area.tools.forEach(function(tool) {
+      var ar, name;
+      tool.exclusiveOptionInstances = [];
+      tool.exclusiveOptions.forEach(function(optionConfig) {
+        var option;
+        option = {};
+        option.name = optionConfig.name;
+        option.active = false;
+        option.set = function(isActive) {
+          if (isActive) {
+            this.element.removeClass('btn-off');
+            this.element.addClass('btn-on');
+            area.state.optionActive = this.name;
+            return this.element.css("border", "" + app.colors.active + " 6px solid");
+          } else {
+            this.element.removeClass('btn-on');
+            this.element.addClass('btn-off');
+            return this.element.css("border", "none");
+          }
+        };
+        option.element = app.draw("<div class=\"option btn\">" + optionConfig.name + "</div>", area.toolExclusiveOptionsCt).css('background-color', optionConfig.color).css('color', 'white');
+        option.element.click(function() {
+          tool.exclusiveOptionInstances.forEach(function(option) {
+            return option.set(false);
+          });
+          return option.set(true);
+        });
+        return tool.exclusiveOptionInstances.push(option);
+      });
+      if ((ar = tool.exclusiveOptionInstances).length) {
+        ar[0].set(true);
+      }
+      if ((name = area.state.optionActive)) {
+        app._.find(tool.exclusiveOptionInstances, function(option) {
+          return option.name === name;
+        }).set(true);
+      }
+      return tool.element.click(function() {
+        area.tools.forEach(function(tool) {
+          return tool.set(false);
+        });
+        return tool.set(true);
+      });
+    });
+    if ((name = area.state.toolActive)) {
+      return app._.find(area.tools, function(tool) {
+        return tool.name === name;
+      }).set(true);
+    }
+  };
+
+}).call(this);
+
+
+},{"../app.coffee":8}],8:[function(require,module,exports){
+(function() {
+  module.exports = {
+    require: function() {
+      var $, areaClass, areaDraw, colors, draw, guiBuilder, link, mouseTracker, resizer, soundHelpers, tools, _;
+      _ = require('lodash');
+      $ = require('jquery');
+      draw = require('./dom/draw.coffee');
+      colors = require('./color_theme.coffee');
+      colors = colors.colors;
+      mouseTracker = require('./mouse_tracker.coffee');
+      soundHelpers = window.SPhelpers;
+      areaClass = require('./area.coffee');
+      areaDraw = require('./area_draw.coffee');
+      link = require('./link.coffee');
+      guiBuilder = require('./gui_builder.coffee');
+      resizer = require('./standard-ui/resizer.coffee');
+      tools = require('./standard-ui/tools.coffee');
+      this._ = _;
+      this.$ = $;
+      this.guiBuilder = guiBuilder;
+      this.colors = colors;
+      this.mouseTracker = mouseTracker;
+      this.draw = draw.draw;
+      this.soundHelpers = soundHelpers;
+      this.areaClass = areaClass;
+      this.areaDraw = areaDraw;
+      this.link = link;
+      this.resizer = resizer;
+      return this.tools = tools;
+    }
+  };
+
+}).call(this);
+
+
+},{"./dom/draw.coffee":6,"./color_theme.coffee":2,"./mouse_tracker.coffee":14,"./area.coffee":15,"./area_draw.coffee":5,"./link.coffee":16,"./gui_builder.coffee":7,"./standard-ui/resizer.coffee":17,"./standard-ui/tools.coffee":13,"lodash":18,"jquery":19}],15:[function(require,module,exports){
 (function() {
   var areaDraw, block, positionLib, _;
 
@@ -219,214 +465,7 @@
 }).call(this);
 
 
-},{"./block.coffee":1,"./area_draw.coffee":5,"./positions/positions.coffee":12,"lodash":13}],14:[function(require,module,exports){
-(function() {
-  var $, area, areaClass, colors, draw, initialized, link, mouseTracker, resizer, rootElement, soundHelpers, startState;
-
-  link = require('./link.coffee');
-
-  areaClass = require('./area.coffee');
-
-  draw = require('./dom/draw.coffee');
-
-  mouseTracker = require('./mouse_tracker.coffee');
-
-  resizer = require('./standard-ui/resizer.coffee');
-
-  $ = require('jquery');
-
-  colors = require('./color_theme.coffee');
-
-  colors = colors.colors;
-
-  soundHelpers = window.SPhelpers;
-
-  colors = require('./color_theme.coffee');
-
-  colors = colors.colors;
-
-  exports.init = function(area) {
-    var fillFuncs, resizerEl;
-    if ((area.container != null)) {
-      area.container.remove();
-    }
-    area.container = draw.draw("<div class=\"area-ct\"></div>");
-    area = areaClass.init(area);
-    area.restart = function() {
-      return exports.init(area);
-    };
-    fillFuncs = {
-      x: function(point) {
-        return area.context.fillRect(point, 0, 1, area.state.len);
-      },
-      y: function(point) {
-        return area.context.fillRect(0, area.state.len - point, area.state.len, 1);
-      }
-    };
-    ['x', 'y'].forEach(function(axis) {
-      var fill, hash;
-      hash = area.grid[axis];
-      if (area.state['gridIsShow_' + axis]) {
-        area.context.fillStyle = colors.inactive;
-        fill = function(n) {
-          var pos;
-          if ((pos = hash.get(n)) < 1) {
-            fillFuncs[axis](pos * area.state.len);
-            return fill(n + 1);
-          }
-        };
-        return fill(0);
-      }
-    });
-    resizerEl = link.init(area);
-    area.tools = [];
-    area.toolCt = draw.draw("<div class=\"toolCt\"></div>", area.container).css('border', "" + colors.active + " 1px solid").css('background-color', colors.barelyThere);
-    area.state.tools.forEach(function(toolName) {
-      var tool;
-      tool = {};
-      tool.active = false;
-      tool.set = function(isActive) {
-        if (isActive) {
-          this.element.removeClass('btn-off');
-          this.element.addClass('btn-on');
-          this.active = true;
-          return this.element.css('background-color', colors.active);
-        } else {
-          this.active = false;
-          this.element.removeClass('btn-on');
-          this.element.addClass('btn-off');
-          return this.element.css('background-color', colors.inactive);
-        }
-      };
-      tool.exclusiveOptions = [];
-      if (toolName === 'pen') {
-        tool.exclusiveOptions = area.state.waveforms;
-      }
-      tool.element = draw.draw("<div class=\"btn tool " + toolName + "\">" + toolName + "</div>", area.toolCt);
-      return area.tools.push(tool);
-    });
-    area.toolExclusiveOptionsCt = draw.draw("<div class=\"waveCt\"></div>", area.toolCt).css('border', "" + colors.active + " 1px solid").css('background-color', colors.inactive);
-    area.tools.forEach(function(tool) {
-      var ar;
-      tool.exclusiveOptionInstances = [];
-      tool.exclusiveOptions.forEach(function(optionConfig) {
-        var option;
-        option = {};
-        option.active = false;
-        option.set = function(isActive) {
-          if (isActive) {
-            this.element.removeClass('btn-off');
-            this.element.addClass('btn-on');
-            this.active = true;
-            return this.element.css("border", "" + colors.active + " 6px solid");
-          } else {
-            this.active = false;
-            this.element.removeClass('btn-on');
-            this.element.addClass('btn-off');
-            return this.element.css("border", "none");
-          }
-        };
-        option.element = draw.draw("<div class=\"option btn\">" + optionConfig.name + "</div>", area.toolExclusiveOptionsCt).css('background-color', optionConfig.color).css('color', 'white');
-        option.element.click(function() {
-          tool.exclusiveOptionInstances.forEach(function(option) {
-            return option.set(false);
-          });
-          return option.set(true);
-        });
-        return tool.exclusiveOptionInstances.push(option);
-      });
-      if ((ar = tool.exclusiveOptionInstances).length) {
-        ar[0].set(true);
-      }
-      return tool.element.click(function() {
-        area.tools.forEach(function(tool) {
-          return tool.set(false);
-        });
-        return tool.set(true);
-      });
-    });
-    if (area.tools.length) {
-      area.tools[0].set(true);
-    }
-    mouseTracker.init({
-      size: 10,
-      callbacks: area.mouseCallbacks
-    });
-    return resizerEl;
-  };
-
-  rootElement = draw.draw("<div class=\"sound-paint\"></div>", $('body'));
-
-  rootElement.css('width', '100%');
-
-  rootElement.css('height', '100%');
-
-  startState = {
-    len: 300,
-    blockSize: 0.02,
-    playSlider: 0.09,
-    bpm: 6,
-    isPlaying: false,
-    isLooping: true,
-    visibleGuiControls: {
-      isPlaying: true,
-      isLooping: true,
-      playSlider: true,
-      gridIsSnap_x: true,
-      gridIsShow_x: true,
-      gridIsSnap_y: true,
-      gridIsShow_y: true,
-      bpm: true,
-      len: true,
-      stateInput: true
-    },
-    gridIsSnap_x: false,
-    gridIsShow_x: false,
-    gridIsSnap_y: true,
-    gridIsShow_y: true,
-    units: [],
-    tools: ['pen'],
-    waveforms: [
-      {
-        name: 'sin',
-        color: "#6a00ff"
-      }, {
-        name: 'sqr',
-        color: "#0000ff"
-      }
-    ]
-  };
-
-  area = {
-    rootElement: rootElement,
-    grid: {
-      x: {
-        get: function(n) {
-          return 1 / 16 * n;
-        }
-      },
-      y: {
-        get: function(n) {
-          var b;
-          b = Math.pow(1.059463, n);
-          return soundHelpers.humanEar.freqToRange(27.5 * b);
-        }
-      }
-    },
-    startState: startState,
-    state: startState
-  };
-
-  initialized = exports.init(area);
-
-  if (area.state.visibleGuiControls.len) {
-    resizer.setToMaximum(initialized);
-  }
-
-}).call(this);
-
-
-},{"./link.coffee":15,"./area.coffee":11,"./dom/draw.coffee":6,"./mouse_tracker.coffee":16,"./standard-ui/resizer.coffee":17,"./color_theme.coffee":2,"jquery":18}],15:[function(require,module,exports){
+},{"./block.coffee":1,"./area_draw.coffee":5,"./positions/positions.coffee":20,"lodash":18}],16:[function(require,module,exports){
 (function() {
   var buttons, playSlider, resizer, sliderWithMaxAndMin, textarea, _;
 
@@ -485,7 +524,7 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":9,"./standard-ui/buttons.coffee":7,"./dom/slider_with_max.coffee":19,"./standard-ui/resizer.coffee":17,"./standard-ui/textarea.coffee":20,"lodash":13}],16:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":11,"./standard-ui/buttons.coffee":9,"./dom/slider_with_max.coffee":21,"./standard-ui/resizer.coffee":17,"./standard-ui/textarea.coffee":22,"lodash":18}],14:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -554,7 +593,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":6,"lodash":13,"jquery":18}],13:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":6,"lodash":18,"jquery":19}],18:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7342,7 +7381,7 @@
 }.call(this));
 
 })(window)
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16456,7 +16495,7 @@ return jQuery;
 }));
 
 })()
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function() {
   var colors, draw, size, ui;
 
@@ -16499,7 +16538,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":6,"../color_theme.coffee":2,"jquery-ui":21}],6:[function(require,module,exports){
+},{"./draw.coffee":6,"../color_theme.coffee":2,"jquery-ui":23}],6:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16524,7 +16563,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":18,"jquery-ui":21}],10:[function(require,module,exports){
+},{"jquery":19,"jquery-ui":23}],12:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16563,7 +16602,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":6,"jquery-ui":21}],19:[function(require,module,exports){
+},{"./draw.coffee":6,"jquery-ui":23}],21:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16584,7 +16623,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":6,"./slider.coffee":10,"jquery-ui":21}],12:[function(require,module,exports){
+},{"./draw.coffee":6,"./slider.coffee":12,"jquery-ui":23}],20:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16645,7 +16684,7 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":13}],17:[function(require,module,exports){
+},{"lodash":18}],17:[function(require,module,exports){
 (function() {
   var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, guiInit, ui;
 
@@ -16657,7 +16696,7 @@ return jQuery;
 
   guiInit = require('../gui_builder.coffee');
 
-  BOTTOM_CONTROL_SIZE = 230;
+  BOTTOM_CONTROL_SIZE = 280;
 
   RIGHT_CONTROL_SIZE = 20;
 
@@ -16706,7 +16745,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":6,"../gui_builder.coffee":14,"jquery":18,"jquery-ui":21}],20:[function(require,module,exports){
+},{"../dom/draw.coffee":6,"../gui_builder.coffee":7,"jquery":19,"jquery-ui":23}],22:[function(require,module,exports){
 (function() {
   var draw, guiInit, json, ui;
 
@@ -16756,7 +16795,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":6,"../gui_builder.coffee":14,"../dom/json.coffee":3,"jquery-ui":21}],21:[function(require,module,exports){
+},{"../dom/draw.coffee":6,"../gui_builder.coffee":7,"../dom/json.coffee":3,"jquery-ui":23}],23:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31764,5 +31803,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":18}]},{},[11,5,1,2,8,6,3,10,19,14,15,4,16,12,7,9,17,20])
+},{"jquery":19}]},{},[8,15,5,1,2,10,6,3,12,21,7,16,4,14,20,9,11,17,22,13])
 ;

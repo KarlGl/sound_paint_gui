@@ -24,6 +24,8 @@ exports.addUnitCanditate = (area, unit)->
 exports.init = (area)->
   area = areaDraw.init(area)
   exports.mouseInit(area)
+  
+  # just for debugging, will remove later
   window.globalarea = area
   area
 
