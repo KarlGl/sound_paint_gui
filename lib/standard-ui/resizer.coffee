@@ -20,7 +20,7 @@ exports.init = (app)->
           # stop infinate loop
           if (area.state['len'] != largest)
             area.resizerElement.val(largest)
-            this.dealWithChange(area.resizerElement, largest)
+            this.dealWithChange(largest)
 
       dealWithChange: (val)->
         old = area.state['len']
@@ -50,14 +50,14 @@ exports.init = (app)->
               key: params.key
             )
 
-        elementMaximize.click ->
-          exports.setToMaximum(element)
+        elementMaximize.click =>
+          this.setToMaximum()
 
-        element.change (event)->
-          exports.dealWithChange(element, event.target.value)
+        element.change (event)=>
+          this.dealWithChange(event.target.value)
 
         element
 
     # call right away
-    out.init()
+    # out.init()
     out

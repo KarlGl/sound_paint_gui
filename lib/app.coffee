@@ -32,7 +32,7 @@ module.exports =
           saveLoad: (require './standard-ui/save_load.coffee')
         }, this.requireAndInit.bind(this)
 
-      this.guiBuilder = require './gui_builder.coffee' 
+      this.guiBuilder = require './sound_draw_gui.coffee' 
       this.draw = require './dom/draw.coffee'
       this.soundHelpers = window.SPhelpers # from other project
       this.defaultState = require './defaults/default_state.coffee'

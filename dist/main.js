@@ -139,6 +139,55 @@
   exports.init = function(app) {
     return {
       init: function(area) {
+        return {
+          dealWithChange: function(val) {
+            var old;
+            old = null;
+            console.log("Reloading from state box");
+            area.state = json.parse(val);
+            area.stateTextArea.params.cb(old);
+            return area.restart();
+          },
+          renderState: function() {
+            return area.stateTextArea.val(area.app.json.stringify(area.state));
+          },
+          init: function(params) {
+            var element;
+            if (area.state.visibleGuiControls[params.key]) {
+              element = area.app.draw("<textarea class=\"" + params.key + "\">", area.container);
+              area.stateTextArea = element;
+              this.renderState();
+              element.params = {
+                parent: area,
+                cb: function(old) {
+                  return params.callbacks[params.key]({
+                    area: area,
+                    old: old,
+                    key: params.key
+                  });
+                }
+              };
+              element.css('width', area.face.width());
+              element.css('height', 130);
+              element.change(function(event) {
+                return exports.dealWithChange(event.target.value);
+              });
+              return element;
+            }
+          }
+        };
+      }
+    };
+  };
+
+}).call(this);
+
+
+},{}],9:[function(require,module,exports){
+(function() {
+  exports.init = function(app) {
+    return {
+      init: function(area) {
         var name;
         area.tools = [];
         area.toolCt = app.draw("<div class=\"toolCt\"></div>", area.container).css('border', "" + app.colors.active + " 1px solid").css('background-color', app.colors.barelyThere);
@@ -222,7 +271,7 @@
 }).call(this);
 
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function() {
   var draw;
 
@@ -309,7 +358,7 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":10}],11:[function(require,module,exports){
+},{"./dom/draw.coffee":11}],12:[function(require,module,exports){
 (function() {
   var positionLib;
 
@@ -369,34 +418,7 @@
 }).call(this);
 
 
-},{"./positions/positions.coffee":12}],13:[function(require,module,exports){
-(function() {
-  var app;
-
-  app = require('./app.coffee');
-
-  exports.init = function(area) {
-    area.restartGUI = function() {
-      return exports.init(area);
-    };
-    return app.newInstance(area);
-  };
-
-  exports.initProgram = function() {
-    app.newInstance();
-    return exports.init({
-      rootElement: app.rootElement.draw(),
-      gridEquations: app.gridEquations(),
-      state: app.defaultState
-    });
-  };
-
-  setTimeout(exports.initProgram, 0);
-
-}).call(this);
-
-
-},{"./app.coffee":14}],15:[function(require,module,exports){
+},{"./positions/positions.coffee":13}],14:[function(require,module,exports){
 (function() {
   var buttons, playSlider, sliderWithMaxAndMin;
 
@@ -453,7 +475,34 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":16,"./standard-ui/buttons.coffee":17,"./dom/slider_with_max.coffee":18}],17:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":15,"./standard-ui/buttons.coffee":16,"./dom/slider_with_max.coffee":17}],18:[function(require,module,exports){
+(function() {
+  var app;
+
+  app = require('./app.coffee');
+
+  exports.init = function(area) {
+    area.restartGUI = function() {
+      return exports.init(area);
+    };
+    return app.newInstance(area);
+  };
+
+  exports.initProgram = function() {
+    app.newInstance();
+    return exports.init({
+      rootElement: app.rootElement.draw(),
+      gridEquations: app.gridEquations(),
+      state: app.defaultState
+    });
+  };
+
+  setTimeout(exports.initProgram, 0);
+
+}).call(this);
+
+
+},{"./app.coffee":19}],16:[function(require,module,exports){
 (function() {
   var btnLib;
 
@@ -506,7 +555,7 @@
 }).call(this);
 
 
-},{"../dom/btn.coffee":19}],16:[function(require,module,exports){
+},{"../dom/btn.coffee":20}],15:[function(require,module,exports){
 (function() {
   var slider;
 
@@ -524,7 +573,7 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":20}],14:[function(require,module,exports){
+},{"../dom/slider.coffee":21}],19:[function(require,module,exports){
 (function() {
   var _;
 
@@ -550,7 +599,7 @@
         resizer: require('./standard-ui/resizer.coffee'),
         saveLoad: require('./standard-ui/save_load.coffee')
       }, this.requireAndInit.bind(this));
-      this.guiBuilder = require('./gui_builder.coffee');
+      this.guiBuilder = require('./sound_draw_gui.coffee');
       this.draw = require('./dom/draw.coffee');
       this.soundHelpers = window.SPhelpers;
       this.defaultState = require('./defaults/default_state.coffee');
@@ -570,7 +619,7 @@
 }).call(this);
 
 
-},{"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./mouse_tracker.coffee":21,"./positions/grid_equations.coffee":7,"./area_draw.coffee":9,"./area_units.coffee":11,"./block.coffee":1,"./link.coffee":15,"./standard-ui/tools.coffee":8,"./standard-ui/resizer.coffee":22,"./standard-ui/save_load.coffee":23,"./gui_builder.coffee":13,"./dom/draw.coffee":10,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"lodash":24,"jquery":25}],21:[function(require,module,exports){
+},{"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./mouse_tracker.coffee":22,"./positions/grid_equations.coffee":7,"./area_draw.coffee":10,"./area_units.coffee":12,"./block.coffee":1,"./link.coffee":14,"./standard-ui/tools.coffee":9,"./standard-ui/resizer.coffee":23,"./standard-ui/save_load.coffee":8,"./sound_draw_gui.coffee":18,"./dom/draw.coffee":11,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"lodash":24,"jquery":25}],22:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -642,7 +691,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":10,"lodash":24,"jquery":25}],24:[function(require,module,exports){
+},{"./dom/draw.coffee":11,"./color_theme.coffee":2,"lodash":24,"jquery":25}],24:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -16544,7 +16593,7 @@ return jQuery;
 }));
 
 })()
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function() {
   var colors, draw, size, ui;
 
@@ -16585,7 +16634,32 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":10,"../color_theme.coffee":2,"jquery-ui":26}],20:[function(require,module,exports){
+},{"./draw.coffee":11,"../color_theme.coffee":2,"jquery-ui":26}],11:[function(require,module,exports){
+(function() {
+  var $, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  module.exports = function(child, parent) {
+    var c;
+    if (parent == null) {
+      parent = $('.sound-paint');
+    }
+    c = $(child);
+    parent.append(c);
+    return c;
+  };
+
+  if (typeof window !== 'undefined') {
+    window.jq = $;
+  }
+
+}).call(this);
+
+
+},{"jquery":25,"jquery-ui":26}],21:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16624,7 +16698,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":10,"jquery-ui":26}],18:[function(require,module,exports){
+},{"./draw.coffee":11,"jquery-ui":26}],17:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16645,7 +16719,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":10,"./slider.coffee":20,"jquery-ui":26}],12:[function(require,module,exports){
+},{"./draw.coffee":11,"./slider.coffee":21,"jquery-ui":26}],13:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16706,32 +16780,7 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":24}],10:[function(require,module,exports){
-(function() {
-  var $, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  module.exports = function(child, parent) {
-    var c;
-    if (parent == null) {
-      parent = $('.sound-paint');
-    }
-    c = $(child);
-    parent.append(c);
-    return c;
-  };
-
-  if (typeof window !== 'undefined') {
-    window.jq = $;
-  }
-
-}).call(this);
-
-
-},{"jquery-ui":26,"jquery":25}],22:[function(require,module,exports){
+},{"lodash":24}],23:[function(require,module,exports){
 (function() {
   var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, ui;
 
@@ -16756,7 +16805,7 @@ return jQuery;
               largest = Math.min((root = area.rootElement).width() - RIGHT_CONTROL_SIZE, root.height() - BOTTOM_CONTROL_SIZE);
               if (area.state['len'] !== largest) {
                 area.resizerElement.val(largest);
-                return this.dealWithChange(area.resizerElement, largest);
+                return this.dealWithChange(largest);
               }
             }
           },
@@ -16768,7 +16817,8 @@ return jQuery;
             return area.restartGUI();
           },
           init: function(params) {
-            var element, elementMaximize;
+            var element, elementMaximize,
+              _this = this;
             element = draw("<input type=\"number\" class=\"resize\">", area.container);
             area.resizerElement = element;
             elementMaximize = draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", area.container);
@@ -16785,15 +16835,14 @@ return jQuery;
               }
             };
             elementMaximize.click(function() {
-              return exports.setToMaximum(element);
+              return _this.setToMaximum();
             });
             element.change(function(event) {
-              return exports.dealWithChange(element, event.target.value);
+              return _this.dealWithChange(event.target.value);
             });
             return element;
           }
         };
-        out.init();
         return out;
       }
     };
@@ -16802,64 +16851,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":10,"jquery":25,"jquery-ui":26}],23:[function(require,module,exports){
-(function() {
-  var draw, guiInit, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('../dom/draw.coffee');
-
-  guiInit = require('../gui_builder.coffee');
-
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        return {
-          dealWithChange: function(val) {
-            var old;
-            old = null;
-            console.log("Reloading from state box");
-            area.state = json.parse(val);
-            area.stateTextArea.params.cb(old);
-            return area.restart();
-          },
-          renderState: function() {
-            return area.stateTextArea.val(area.app.json.stringify(area.state));
-          },
-          init: function(params) {
-            var element;
-            if (area.state.visibleGuiControls[params.key]) {
-              element = draw("<textarea class=\"" + params.key + "\">", area.container);
-              area.stateTextArea = element;
-              this.renderState();
-              element.params = {
-                parent: area,
-                cb: function(old) {
-                  return params.callbacks[params.key]({
-                    area: area,
-                    old: old,
-                    key: params.key
-                  });
-                }
-              };
-              element.css('width', area.face.width());
-              element.css('height', 130);
-              element.change(function(event) {
-                return exports.dealWithChange(event.target.value);
-              });
-              return element;
-            }
-          }
-        };
-      }
-    };
-  };
-
-}).call(this);
-
-
-},{"../dom/draw.coffee":10,"../gui_builder.coffee":13,"jquery-ui":26}],26:[function(require,module,exports){
+},{"../dom/draw.coffee":11,"jquery":25,"jquery-ui":26}],26:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31867,5 +31859,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":25}]},{},[14,9,11,1,2,3,19,10,4,5,20,18,13,15,6,21,7,12,17,16,22,23,8])
+},{"jquery":25}]},{},[19,10,12,1,2,3,20,11,4,5,21,17,14,6,22,7,13,18,16,15,23,8,9])
 ;
