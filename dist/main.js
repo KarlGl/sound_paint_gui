@@ -1,8 +1,16 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  exports.init = function(area, block) {
-    area.context.fillStyle = 'black';
-    return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
+  exports.init = function(app) {
+    return {
+      init: function(area) {
+        return {
+          init: function(block) {
+            area.context.fillStyle = 'black';
+            return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
+          }
+        };
+      }
+    };
   };
 
 }).call(this);
@@ -10,10 +18,12 @@
 
 },{}],2:[function(require,module,exports){
 (function() {
-  module.exports = {
-    inactive: 'rgb(209, 209, 209)',
-    barelyThere: 'rgb(239, 239, 239)',
-    active: 'green'
+  exports.init = function() {
+    return {
+      inactive: 'rgb(209, 209, 209)',
+      barelyThere: 'rgb(239, 239, 239)',
+      active: 'green'
+    };
   };
 
 }).call(this);
@@ -78,12 +88,16 @@
 
 },{}],5:[function(require,module,exports){
 (function() {
-  exports.draw = function(app) {
-    var rootElement;
-    rootElement = app.draw("<div class=\"sound-paint\"></div>", app.$('body'));
-    rootElement.css('width', '100%');
-    rootElement.css('height', '100%');
-    return rootElement;
+  exports.init = function(app) {
+    return {
+      draw: function() {
+        var rootElement;
+        rootElement = app.draw("<div class=\"sound-paint\"></div>", app.$('body'));
+        rootElement.css('width', '100%');
+        rootElement.css('height', '100%');
+        return rootElement;
+      }
+    };
   };
 
 }).call(this);
@@ -98,20 +112,22 @@
 
 },{}],7:[function(require,module,exports){
 (function() {
-  module.exports = function(app) {
-    return {
-      x: {
-        get: function(n) {
-          return 1 / 16 * n;
+  exports.init = function(app) {
+    return function() {
+      return {
+        x: {
+          get: function(n) {
+            return 1 / 16 * n;
+          }
+        },
+        y: {
+          get: function(n) {
+            var b;
+            b = Math.pow(1.059463, n);
+            return app.soundHelpers.humanEar.freqToRange(27.5 * b);
+          }
         }
-      },
-      y: {
-        get: function(n) {
-          var b;
-          b = Math.pow(1.059463, n);
-          return app.soundHelpers.humanEar.freqToRange(27.5 * b);
-        }
-      }
+      };
     };
   };
 
@@ -204,86 +220,66 @@
 
 },{}],9:[function(require,module,exports){
 (function() {
-  var app, block, colors, draw;
+  var positionLib;
 
-  app = require('./app.coffee');
+  positionLib = require('./positions/positions.coffee');
 
-  draw = require('./dom/draw.coffee');
-
-  colors = require('./color_theme.coffee');
-
-  block = require('./block.coffee');
-
-  draw = draw;
-
-  exports.drawGrids = function(app, area) {
-    var fillFuncs;
-    fillFuncs = {
-      x: function(point) {
-        return area.context.fillRect(point, 0, 1, area.state.len);
-      },
-      y: function(point) {
-        return area.context.fillRect(0, area.state.len - point, area.state.len, 1);
-      }
-    };
-    return ['x', 'y'].forEach(function(axis) {
-      var fill, hash;
-      hash = area.grid[axis];
-      if (area.state['gridIsShow_' + axis]) {
-        area.context.fillStyle = app.colors.inactive;
-        fill = function(n) {
-          var pos;
-          if ((pos = hash.get(n)) < 1) {
-            fillFuncs[axis](pos * area.state.len);
-            return fill(n + 1);
+  exports.init = function(app) {
+    return {
+      init: function(area) {
+        return {
+          addUnitCanditate: function(unit) {
+            if (!positionLib.isIn(area.state.units, unit) && !(unit.x === 1) && !(unit.y === 0)) {
+              console.log("New Unit", unit);
+              area.state.units.push(unit);
+              callbacks['units']({
+                area: area
+              });
+              return area.app.block.init(unit);
+            }
+          },
+          init: function() {
+            return this.mouseInit();
+          },
+          mouseInit: function() {
+            var potentiallyMakeNewBlock,
+              _this = this;
+            potentiallyMakeNewBlock = function(mouseState) {
+              var newUnitPos, snappedPoint;
+              if (mouseState["new"].down) {
+                snappedPoint = positionLib.snapToGrid(mouseState["new"].pos, area.state.blockSize * area.state.len);
+                if (newUnitPos = positionLib.isInBox(snappedPoint, area.box)) {
+                  ['x', 'y'].forEach(function(axis) {
+                    var gridHash;
+                    gridHash = area.gridEquations[axis];
+                    if (area.state['gridIsSnap_' + axis]) {
+                      return newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
+                    }
+                  });
+                  return _this.addUnitCanditate(newUnitPos);
+                }
+              }
+            };
+            area.mouseCallbacks = {
+              mousemove: function(mouseState) {
+                return potentiallyMakeNewBlock(mouseState);
+              },
+              mousedown: function(mouseState) {
+                return potentiallyMakeNewBlock(mouseState);
+              },
+              mouseup: function(mouseState) {}
+            };
+            return area;
           }
         };
-        return fill(0);
-      }
-    });
-  };
-
-  exports.drawContainer = function(app, area) {
-    if ((area.container != null)) {
-      area.container.remove();
-    }
-    return area.container = app.draw("<div class=\"area-ct\"></div>");
-  };
-
-  exports.setSize = function(areaParam) {
-    areaParam.face.attr('width', areaParam.state.len);
-    areaParam.face.attr('height', areaParam.state.len);
-    return areaParam.state.units.forEach(function(unit) {
-      return block.init(areaParam, unit);
-    });
-  };
-
-  exports.init = function(area) {
-    var pos;
-    area.face = draw('<canvas class="area"></canvas><br/>', area.container);
-    area.context = area.face[0].getContext("2d");
-    pos = area.face.position();
-    exports.setSize(area);
-    area.playIndicator = {
-      face: draw('<div class="play-indicator"></div>', area.container),
-      setX: function(newVal) {
-        return this.face.css('left', (newVal * area.state.len) + pos.left).css('top', pos.top);
       }
     };
-    area.playIndicator.face.css('height', area.state.len).css('background-color', colors.active);
-    area.box = {
-      top: pos.top,
-      left: pos.left,
-      right: pos.left + area.face.width(),
-      bottom: pos.top + area.face.height()
-    };
-    return area;
   };
 
 }).call(this);
 
 
-},{"./app.coffee":10,"./dom/draw.coffee":11,"./color_theme.coffee":2,"./block.coffee":1}],12:[function(require,module,exports){
+},{"./positions/positions.coffee":10}],11:[function(require,module,exports){
 (function() {
   var app;
 
@@ -295,21 +291,22 @@
 
   exports.init = function(area) {
     var resizerEl;
-    area.app = app;
-    app.areaDraw.drawContainer(app, area);
-    area = app.areaClass.init(area);
-    app.areaDraw.drawGrids(app, area);
+    area.app = app.newInstance(area);
+    area.app.areaDraw.drawContainer();
+    area.app.areaDraw.init();
+    area.app.areaUnits.init();
+    area.app.areaDraw.drawGrids();
     resizerEl = app.link.init(area);
     app.tools.init(app, area);
-    app.mouseTracker.init(app, area);
+    app.mouseTracker.init(area);
     return resizerEl;
   };
 
   exports.initProgram = function() {
-    app.require();
+    app.newInstance();
     return app.resizer.setToMaximum(app, exports.init({
-      rootElement: app.rootElement.draw(app),
-      grid: app.gridEquations(app),
+      rootElement: app.rootElement.draw(),
+      gridEquations: app.gridEquations(),
       state: app.defaultState
     }));
   };
@@ -319,7 +316,85 @@
 }).call(this);
 
 
-},{"./app.coffee":10}],13:[function(require,module,exports){
+},{"./app.coffee":12}],13:[function(require,module,exports){
+(function() {
+  var draw;
+
+  draw = require('./dom/draw.coffee');
+
+  exports.init = function(app) {
+    return {
+      init: function(area) {
+        return {
+          drawGrids: function() {
+            var fillFuncs;
+            fillFuncs = {
+              x: function(point) {
+                return area.context.fillRect(point, 0, 1, area.state.len);
+              },
+              y: function(point) {
+                return area.context.fillRect(0, area.state.len - point, area.state.len, 1);
+              }
+            };
+            return ['x', 'y'].forEach(function(axis) {
+              var fill, hash;
+              hash = area.gridEquations[axis];
+              if (area.state['gridIsShow_' + axis]) {
+                area.context.fillStyle = area.app.colors.inactive;
+                fill = function(n) {
+                  var pos;
+                  if ((pos = hash.get(n)) < 1) {
+                    fillFuncs[axis](pos * area.state.len);
+                    return fill(n + 1);
+                  }
+                };
+                return fill(0);
+              }
+            });
+          },
+          setSize: function() {
+            area.face.attr('width', area.state.len);
+            area.face.attr('height', area.state.len);
+            return area.state.units.forEach(function(unit) {
+              return area.app.block.init(unit);
+            });
+          },
+          drawContainer: function() {
+            if ((area.container != null)) {
+              area.container.remove();
+            }
+            return area.container = app.draw("<div class=\"area-ct\"></div>");
+          },
+          init: function() {
+            var pos;
+            area.face = draw('<canvas class="area"></canvas><br/>', area.container);
+            area.context = area.face[0].getContext("2d");
+            pos = area.face.position();
+            this.setSize();
+            area.playIndicator = {
+              face: draw('<div class="play-indicator"></div>', area.container),
+              setX: function(newVal) {
+                return this.face.css('left', (newVal * area.state.len) + pos.left).css('top', pos.top);
+              }
+            };
+            area.playIndicator.face.css('height', area.state.len).css('background-color', area.app.colors.active);
+            area.box = {
+              top: pos.top,
+              left: pos.left,
+              right: pos.left + area.face.width(),
+              bottom: pos.top + area.face.height()
+            };
+            return area;
+          }
+        };
+      }
+    };
+  };
+
+}).call(this);
+
+
+},{"./dom/draw.coffee":14}],15:[function(require,module,exports){
 (function() {
   var btnLib;
 
@@ -372,7 +447,7 @@
 }).call(this);
 
 
-},{"../dom/btn.coffee":14}],15:[function(require,module,exports){
+},{"../dom/btn.coffee":16}],17:[function(require,module,exports){
 (function() {
   var slider;
 
@@ -390,96 +465,55 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":16}],10:[function(require,module,exports){
+},{"../dom/slider.coffee":18}],12:[function(require,module,exports){
 (function() {
-  module.exports = {
-    require: function() {
-      this.rootElement = require('./dom/root_element.coffee');
-      this._ = require('lodash');
-      this.$ = require('jquery');
-      this.guiBuilder = require('./gui_builder.coffee');
-      this.colors = require('./color_theme.coffee');
-      this.mouseTracker = require('./mouse_tracker.coffee');
-      this.draw = require('./dom/draw.coffee');
-      this.soundHelpers = window.SPhelpers;
-      this.areaClass = require('./area.coffee');
-      this.areaDraw = require('./area_draw.coffee');
-      this.link = require('./link.coffee');
-      this.resizer = require('./standard-ui/resizer.coffee');
-      this.tools = require('./standard-ui/tools.coffee');
-      this.gridEquations = require('./positions/grid_equations.coffee');
-      this.defaultState = require('./defaults/default_state.coffee');
-      this.json = require('./dom/json.coffee');
-      return this.textArea = require('./standard-ui/textarea.coffee');
-    }
-  };
-
-}).call(this);
-
-
-},{"./dom/root_element.coffee":5,"./gui_builder.coffee":12,"./color_theme.coffee":2,"./mouse_tracker.coffee":17,"./dom/draw.coffee":11,"./area.coffee":18,"./area_draw.coffee":9,"./link.coffee":19,"./standard-ui/resizer.coffee":20,"./standard-ui/tools.coffee":8,"./positions/grid_equations.coffee":7,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"./standard-ui/textarea.coffee":21,"lodash":22,"jquery":23}],18:[function(require,module,exports){
-(function() {
-  var areaDraw, block, positionLib, _;
-
-  block = require('./block.coffee');
-
-  areaDraw = require('./area_draw.coffee');
-
-  positionLib = require('./positions/positions.coffee');
+  var _;
 
   _ = require('lodash');
 
-  exports.addUnitCanditate = function(area, unit) {
-    if (!positionLib.isIn(area.state.units, unit) && !(unit.x === 1) && !(unit.y === 0)) {
-      console.log("New Unit", unit);
-      area.state.units.push(unit);
-      callbacks['units']({
-        area: area
-      });
-      return block.init(area, unit);
+  module.exports = {
+    requireAndInit: function(instance, key) {
+      return this[key] = instance.init(this);
+    },
+    newInstance: function() {
+      this._ = _;
+      this.$ = require('jquery');
+      _.forEach({
+        rootElement: require('./dom/root_element.coffee'),
+        colors: require('./color_theme.coffee'),
+        mouseTracker: require('./mouse_tracker.coffee'),
+        gridEquations: require('./positions/grid_equations.coffee'),
+        areaDraw: require('./area_draw.coffee'),
+        areaUnits: require('./area_units.coffee'),
+        block: require('./block.coffee')
+      }, this.requireAndInit.bind(this));
+      this.guiBuilder = require('./gui_builder.coffee');
+      this.draw = require('./dom/draw.coffee');
+      this.soundHelpers = window.SPhelpers;
+      this.link = require('./link.coffee');
+      this.resizer = require('./standard-ui/resizer.coffee');
+      this.tools = require('./standard-ui/tools.coffee');
+      this.defaultState = require('./defaults/default_state.coffee');
+      this.json = require('./dom/json.coffee');
+      this.textArea = require('./standard-ui/textarea.coffee');
+      return this.newInstance = function(area) {
+        var instanceWithArea;
+        instanceWithArea = _.clone(this);
+        instanceWithArea.requireAndInit = function(key) {
+          return this[key] = this[key].init(area);
+        };
+        ['areaDraw', 'areaUnits', 'block'].forEach(function(key) {
+          return instanceWithArea.requireAndInit(key);
+        });
+        return instanceWithArea;
+      };
     }
-  };
-
-  exports.init = function(area) {
-    area = areaDraw.init(area);
-    exports.mouseInit(area);
-    window.globalarea = area;
-    return area;
-  };
-
-  exports.mouseInit = function(area) {
-    var potentiallyMakeNewBlock;
-    potentiallyMakeNewBlock = function(mouseState) {
-      var newUnitPos, snappedPoint;
-      if (mouseState["new"].down) {
-        snappedPoint = positionLib.snapToGrid(mouseState["new"].pos, area.state.blockSize * area.state.len);
-        if (newUnitPos = positionLib.isInBox(snappedPoint, area.box)) {
-          ['x', 'y'].forEach(function(axis) {
-            var gridHash;
-            gridHash = area.grid[axis];
-            if (area.state['gridIsSnap_' + axis]) {
-              return newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
-            }
-          });
-          return exports.addUnitCanditate(area, newUnitPos);
-        }
-      }
-    };
-    return area.mouseCallbacks = {
-      mousemove: function(mouseState) {
-        return potentiallyMakeNewBlock(mouseState);
-      },
-      mousedown: function(mouseState) {
-        return potentiallyMakeNewBlock(mouseState);
-      },
-      mouseup: function(mouseState) {}
-    };
   };
 
 }).call(this);
 
 
-},{"./block.coffee":1,"./area_draw.coffee":9,"./positions/positions.coffee":24,"lodash":22}],19:[function(require,module,exports){
+},{"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./mouse_tracker.coffee":19,"./positions/grid_equations.coffee":7,"./area_draw.coffee":13,"./area_units.coffee":9,"./block.coffee":1,"./gui_builder.coffee":11,"./dom/draw.coffee":14,"./link.coffee":20,"./standard-ui/resizer.coffee":21,"./standard-ui/tools.coffee":8,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"./standard-ui/textarea.coffee":22,"lodash":23,"jquery":24}],20:[function(require,module,exports){
 (function() {
   var buttons, playSlider, resizer, sliderWithMaxAndMin, textarea, _;
 
@@ -540,7 +574,7 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":15,"./standard-ui/buttons.coffee":13,"./dom/slider_with_max.coffee":25,"./standard-ui/resizer.coffee":20,"./standard-ui/textarea.coffee":21,"lodash":22}],17:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":17,"./standard-ui/buttons.coffee":15,"./dom/slider_with_max.coffee":25,"./standard-ui/resizer.coffee":21,"./standard-ui/textarea.coffee":22,"lodash":23}],19:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -552,63 +586,67 @@
 
   $ = require('jquery');
 
-  exports.init = function(app, area) {
-    var callbacks, copyNewToOld, defaultState, down, size, states;
-    callbacks = area.mouseCallbacks;
-    size = 10;
-    down = false;
-    if ((typeof face !== "undefined" && face !== null)) {
-      face.css('position', 'absolute').css('width', size + 'px').css('height', size + 'px').css('background-color', colors.mouse.inactive);
-    }
-    defaultState = {
-      pos: {
-        x: null,
-        y: null
-      },
-      down: false
-    };
-    states = {
-      "new": _.cloneDeep(defaultState),
-      old: _.cloneDeep(defaultState)
-    };
-    copyNewToOld = function() {
-      return states.old = _.cloneDeep(states["new"]);
-    };
-    return _.each({
-      mousemove: function(event) {
-        copyNewToOld();
-        states["new"].pos.x = event.pageX;
-        states["new"].pos.y = event.pageY;
+  exports.init = function(app) {
+    return {
+      init: function(area) {
+        var callbacks, copyNewToOld, defaultState, down, size, states;
+        callbacks = area.mouseCallbacks;
+        size = 10;
+        down = false;
         if ((typeof face !== "undefined" && face !== null)) {
-          face.css('top', event.pageY + 'px').css('left', event.pageX + 'px');
+          face.css('position', 'absolute').css('width', size + 'px').css('height', size + 'px').css('background-color', colors.mouse.inactive);
         }
-        return callbacks.mousemove(states);
-      },
-      mousedown: function(event) {
-        copyNewToOld();
-        states["new"].down = true;
-        if ((typeof face !== "undefined" && face !== null)) {
-          face.css('background-color', colors.active);
-        }
-        return callbacks.mousedown(states);
-      },
-      mouseup: function(event) {
-        copyNewToOld();
-        states["new"].down = false;
-        if ((typeof face !== "undefined" && face !== null)) {
-          face.css('background-color', colors.mouse.inactive);
-        }
-        return callbacks.mouseup(states);
+        defaultState = {
+          pos: {
+            x: null,
+            y: null
+          },
+          down: false
+        };
+        states = {
+          "new": _.cloneDeep(defaultState),
+          old: _.cloneDeep(defaultState)
+        };
+        copyNewToOld = function() {
+          return states.old = _.cloneDeep(states["new"]);
+        };
+        return _.each({
+          mousemove: function(event) {
+            copyNewToOld();
+            states["new"].pos.x = event.pageX;
+            states["new"].pos.y = event.pageY;
+            if ((typeof face !== "undefined" && face !== null)) {
+              face.css('top', event.pageY + 'px').css('left', event.pageX + 'px');
+            }
+            return callbacks.mousemove(states);
+          },
+          mousedown: function(event) {
+            copyNewToOld();
+            states["new"].down = true;
+            if ((typeof face !== "undefined" && face !== null)) {
+              face.css('background-color', colors.active);
+            }
+            return callbacks.mousedown(states);
+          },
+          mouseup: function(event) {
+            copyNewToOld();
+            states["new"].down = false;
+            if ((typeof face !== "undefined" && face !== null)) {
+              face.css('background-color', colors.mouse.inactive);
+            }
+            return callbacks.mouseup(states);
+          }
+        }, function(val, key) {
+          return $("html")[key](val);
+        });
       }
-    }, function(val, key) {
-      return $("html")[key](val);
-    });
+    };
   };
 
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":11,"lodash":22,"jquery":23}],22:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":14,"lodash":23,"jquery":24}],23:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7396,7 +7434,7 @@
 }.call(this));
 
 })(window)
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16510,7 +16548,7 @@ return jQuery;
 }));
 
 })()
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function() {
   var colors, draw, size, ui;
 
@@ -16551,7 +16589,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":11,"../color_theme.coffee":2,"jquery-ui":26}],11:[function(require,module,exports){
+},{"./draw.coffee":14,"../color_theme.coffee":2,"jquery-ui":26}],14:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16576,7 +16614,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":23,"jquery-ui":26}],16:[function(require,module,exports){
+},{"jquery":24,"jquery-ui":26}],18:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16615,7 +16653,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":11,"jquery-ui":26}],25:[function(require,module,exports){
+},{"./draw.coffee":14,"jquery-ui":26}],25:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16636,7 +16674,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":11,"./slider.coffee":16,"jquery-ui":26}],24:[function(require,module,exports){
+},{"./draw.coffee":14,"./slider.coffee":18,"jquery-ui":26}],10:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16697,7 +16735,7 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":22}],20:[function(require,module,exports){
+},{"lodash":23}],21:[function(require,module,exports){
 (function() {
   var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, guiInit, ui;
 
@@ -16760,7 +16798,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":11,"../gui_builder.coffee":12,"jquery":23,"jquery-ui":26}],21:[function(require,module,exports){
+},{"../dom/draw.coffee":14,"../gui_builder.coffee":11,"jquery":24,"jquery-ui":26}],22:[function(require,module,exports){
 (function() {
   var draw, guiInit, ui;
 
@@ -16811,7 +16849,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":11,"../gui_builder.coffee":12,"jquery-ui":26}],26:[function(require,module,exports){
+},{"../dom/draw.coffee":14,"../gui_builder.coffee":11,"jquery-ui":26}],26:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31819,5 +31857,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":23}]},{},[10,18,9,1,2,3,14,11,4,5,16,25,12,19,6,17,7,24,13,15,20,21,8])
+},{"jquery":24}]},{},[12,13,9,1,2,3,16,14,4,5,18,25,11,20,6,19,7,10,15,17,21,22,8])
 ;

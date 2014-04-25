@@ -18,14 +18,15 @@ exports.init = (area)->
   #
   # this means any time we pass area we now can get to any module in the app.
   #
-  area.app = app
+  area.app = app.newInstance(area)
 
-  app.areaDraw.drawContainer(app, area)
+  area.app.areaDraw.drawContainer()
 
-  #init area
-  area = app.areaClass.init(area)
+  area.app.areaDraw.init()
 
-  app.areaDraw.drawGrids(app, area)
+  area.app.areaUnits.init()
+
+  area.app.areaDraw.drawGrids()
 
   #
   # here, the bigest init call, for anything with a callback handled in the other project.
@@ -34,20 +35,24 @@ exports.init = (area)->
 
   app.tools.init(app, area)
 
-  app.mouseTracker.init(app, area)
+  app.mouseTracker.init(area)
 
   resizerEl
 
 exports.initProgram = ->
-  app.require()
+  app.newInstance()
+
   app.resizer.setToMaximum(
     app, 
     exports.init(
-      rootElement: app.rootElement.draw(app),
-      grid: app.gridEquations(app),
+      rootElement: app.rootElement.draw(),
+      gridEquations: app.gridEquations(),
       state: app.defaultState,
     )
   )
 
-setTimeout(exports.initProgram,0)
+# 
+# use another execution thread to the one loading files.
+#
+setTimeout(exports.initProgram, 0)
 
