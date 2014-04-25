@@ -19,7 +19,13 @@ exports.init = (app)->
         if (isActive)
           this.element.removeClass('btn-off')
           this.element.addClass('btn-on')
+          
+
+          # 
+          # updates to area state
           area.state.toolActive = this.name
+          area.app.saveLoad.renderState()
+
           this.element.css('background-color', app.colors.active)
         else
           this.element.removeClass('btn-on')
@@ -46,6 +52,8 @@ exports.init = (app)->
               this.element.removeClass('btn-off')
               this.element.addClass('btn-on')
               area.state.optionActive = this.name
+              area.app.saveLoad.renderState()
+              
               this.element.css("border", "#{app.colors.active} 6px solid")
             else
               this.element.removeClass('btn-on')

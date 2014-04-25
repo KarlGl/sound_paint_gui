@@ -200,6 +200,7 @@
               this.element.removeClass('btn-off');
               this.element.addClass('btn-on');
               area.state.toolActive = this.name;
+              area.app.saveLoad.renderState();
               return this.element.css('background-color', app.colors.active);
             } else {
               this.element.removeClass('btn-on');
@@ -228,6 +229,7 @@
                 this.element.removeClass('btn-off');
                 this.element.addClass('btn-on');
                 area.state.optionActive = this.name;
+                area.app.saveLoad.renderState();
                 return this.element.css("border", "" + app.colors.active + " 6px solid");
               } else {
                 this.element.removeClass('btn-on');
@@ -482,6 +484,7 @@
   app = require('./app.coffee');
 
   exports.init = function(area) {
+    window.globalArea = area;
     area.restartGUI = function() {
       return exports.init(area);
     };
@@ -691,7 +694,7 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":11,"./color_theme.coffee":2,"lodash":24,"jquery":25}],24:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":11,"lodash":24,"jquery":25}],24:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
