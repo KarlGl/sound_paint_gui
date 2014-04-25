@@ -18,15 +18,7 @@ exports.init = (area)->
   #
   # this means any time we pass area we now can get to any module in the app.
   #
-  area.app = app.newInstance(area)
-
-  area.app.areaDraw.drawContainer()
-
-  area.app.areaDraw.init()
-
-  area.app.areaUnits.init()
-
-  area.app.areaDraw.drawGrids()
+  app.newInstance(area)
 
   #
   # here, the bigest init call, for anything with a callback handled in the other project.

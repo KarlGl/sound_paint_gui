@@ -15,7 +15,6 @@ module.exports =
       this._ = _
       this.$ = require 'jquery'
 
-
       #
       # These classes will be initialized with the "app" object.
       #
@@ -42,20 +41,19 @@ module.exports =
         # 
         # use the same keys as class (but reset the keys that use an area).
         #
-        instanceWithArea = _.clone(this)
+        area.app = _.clone(this)
         
-        instanceWithArea.requireAndInit = (key)->
+        area.app.requireAndInit = (key)->
           this[key] = this[key].init(area)
 
         #
         # These classes will be initialized with an "area" object.
+        # order could possibly be important here
         #
         [
-          'areaDraw' 
+          'areaDraw'
           'areaUnits'
           'block'
         ].forEach (key)->
-          instanceWithArea.requireAndInit(key)
-
-        instanceWithArea
+          area.app.requireAndInit(key)
   }
