@@ -1,8 +1,9 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  exports.init = function(area, block) {
-    area.context.fillStyle = 'black';
-    return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
+  exports.colors = {
+    inactive: 'rgb(209, 209, 209)',
+    barelyThere: 'rgb(239, 239, 239)',
+    active: 'green'
   };
 
 }).call(this);
@@ -10,10 +11,9 @@
 
 },{}],2:[function(require,module,exports){
 (function() {
-  exports.colors = {
-    inactive: 'rgb(209, 209, 209)',
-    barelyThere: 'rgb(239, 239, 239)',
-    active: 'green'
+  exports.init = function(area, block) {
+    area.context.fillStyle = 'black';
+    return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
   };
 
 }).call(this);
@@ -41,7 +41,9 @@
 
 },{}],5:[function(require,module,exports){
 (function() {
-  var block, colors, draw;
+  var app, block, colors, draw;
+
+  app = require('./app.coffee');
 
   draw = require('./dom/draw.coffee');
 
@@ -52,6 +54,13 @@
   colors = colors.colors;
 
   draw = draw.draw;
+
+  exports.drawContainer = function(app, area) {
+    if ((area.container != null)) {
+      area.container.remove();
+    }
+    return area.container = app.draw("<div class=\"area-ct\"></div>");
+  };
 
   exports.setSize = function(areaParam) {
     areaParam.face.attr('width', areaParam.state.len);
@@ -86,7 +95,7 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":6,"./color_theme.coffee":2,"./block.coffee":1}],7:[function(require,module,exports){
+},{"./app.coffee":6,"./dom/draw.coffee":7,"./color_theme.coffee":1,"./block.coffee":2}],8:[function(require,module,exports){
 (function() {
   var app;
 
@@ -98,10 +107,7 @@
 
   exports.init = function(area) {
     var fillFuncs, resizerEl;
-    if ((area.container != null)) {
-      area.container.remove();
-    }
-    area.container = app.draw("<div class=\"area-ct\"></div>");
+    app.areaDraw.drawContainer(app, area);
     area = app.areaClass.init(area);
     fillFuncs = {
       x: function(point) {
@@ -209,7 +215,7 @@
 }).call(this);
 
 
-},{"./app.coffee":8}],9:[function(require,module,exports){
+},{"./app.coffee":6}],9:[function(require,module,exports){
 (function() {
   var btnLib;
 
@@ -368,7 +374,43 @@
 }).call(this);
 
 
-},{"../app.coffee":8}],14:[function(require,module,exports){
+},{"../app.coffee":6}],6:[function(require,module,exports){
+(function() {
+  module.exports = {
+    require: function() {
+      var $, areaClass, areaDraw, colors, draw, guiBuilder, link, mouseTracker, resizer, soundHelpers, tools, _;
+      _ = require('lodash');
+      $ = require('jquery');
+      draw = require('./dom/draw.coffee');
+      colors = require('./color_theme.coffee');
+      colors = colors.colors;
+      mouseTracker = require('./mouse_tracker.coffee');
+      soundHelpers = window.SPhelpers;
+      areaClass = require('./area.coffee');
+      areaDraw = require('./area_draw.coffee');
+      link = require('./link.coffee');
+      guiBuilder = require('./gui_builder.coffee');
+      resizer = require('./standard-ui/resizer.coffee');
+      tools = require('./standard-ui/tools.coffee');
+      this._ = _;
+      this.$ = $;
+      this.guiBuilder = guiBuilder;
+      this.colors = colors;
+      this.mouseTracker = mouseTracker;
+      this.draw = draw.draw;
+      this.soundHelpers = soundHelpers;
+      this.areaClass = areaClass;
+      this.areaDraw = areaDraw;
+      this.link = link;
+      this.resizer = resizer;
+      return this.tools = tools;
+    }
+  };
+
+}).call(this);
+
+
+},{"./dom/draw.coffee":7,"./color_theme.coffee":1,"./mouse_tracker.coffee":14,"./area.coffee":15,"./area_draw.coffee":5,"./link.coffee":16,"./gui_builder.coffee":8,"./standard-ui/resizer.coffee":17,"./standard-ui/tools.coffee":13,"lodash":18,"jquery":19}],15:[function(require,module,exports){
 (function() {
   var areaDraw, block, positionLib, _;
 
@@ -430,43 +472,7 @@
 }).call(this);
 
 
-},{"./block.coffee":1,"./positions/positions.coffee":15,"./area_draw.coffee":5,"lodash":16}],8:[function(require,module,exports){
-(function() {
-  module.exports = {
-    require: function() {
-      var $, areaClass, areaDraw, colors, draw, guiBuilder, link, mouseTracker, resizer, soundHelpers, tools, _;
-      _ = require('lodash');
-      $ = require('jquery');
-      draw = require('./dom/draw.coffee');
-      colors = require('./color_theme.coffee');
-      colors = colors.colors;
-      mouseTracker = require('./mouse_tracker.coffee');
-      soundHelpers = window.SPhelpers;
-      areaClass = require('./area.coffee');
-      areaDraw = require('./area_draw.coffee');
-      link = require('./link.coffee');
-      guiBuilder = require('./gui_builder.coffee');
-      resizer = require('./standard-ui/resizer.coffee');
-      tools = require('./standard-ui/tools.coffee');
-      this._ = _;
-      this.$ = $;
-      this.guiBuilder = guiBuilder;
-      this.colors = colors;
-      this.mouseTracker = mouseTracker;
-      this.draw = draw.draw;
-      this.soundHelpers = soundHelpers;
-      this.areaClass = areaClass;
-      this.areaDraw = areaDraw;
-      this.link = link;
-      this.resizer = resizer;
-      return this.tools = tools;
-    }
-  };
-
-}).call(this);
-
-
-},{"./dom/draw.coffee":6,"./color_theme.coffee":2,"./mouse_tracker.coffee":17,"./area.coffee":14,"./area_draw.coffee":5,"./link.coffee":18,"./gui_builder.coffee":7,"./standard-ui/resizer.coffee":19,"./standard-ui/tools.coffee":13,"lodash":16,"jquery":20}],18:[function(require,module,exports){
+},{"./block.coffee":2,"./area_draw.coffee":5,"./positions/positions.coffee":20,"lodash":18}],16:[function(require,module,exports){
 (function() {
   var buttons, playSlider, resizer, sliderWithMaxAndMin, textarea, _;
 
@@ -525,7 +531,7 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":11,"./standard-ui/buttons.coffee":9,"./dom/slider_with_max.coffee":21,"./standard-ui/resizer.coffee":19,"./standard-ui/textarea.coffee":22,"lodash":16}],17:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":11,"./standard-ui/buttons.coffee":9,"./dom/slider_with_max.coffee":21,"./standard-ui/resizer.coffee":17,"./standard-ui/textarea.coffee":22,"lodash":18}],14:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -594,7 +600,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":6,"lodash":16,"jquery":20}],16:[function(require,module,exports){
+},{"./color_theme.coffee":1,"./dom/draw.coffee":7,"lodash":18,"jquery":19}],18:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7382,7 +7388,7 @@
 }.call(this));
 
 })(window)
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16539,7 +16545,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":6,"../color_theme.coffee":2,"jquery-ui":23}],6:[function(require,module,exports){
+},{"./draw.coffee":7,"../color_theme.coffee":1,"jquery-ui":23}],7:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16564,7 +16570,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":20,"jquery-ui":23}],12:[function(require,module,exports){
+},{"jquery":19,"jquery-ui":23}],12:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16603,7 +16609,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":6,"jquery-ui":23}],21:[function(require,module,exports){
+},{"./draw.coffee":7,"jquery-ui":23}],21:[function(require,module,exports){
 (function() {
   var draw, slider, ui;
 
@@ -16624,68 +16630,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":6,"./slider.coffee":12,"jquery-ui":23}],15:[function(require,module,exports){
-(function() {
-  var _;
-
-  _ = require('lodash');
-
-  exports.isInBox = function(pos, box) {
-    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
-      return exports.amountInBox(pos, box);
-    }
-  };
-
-  exports.snapToGrid = function(pos, gridCellSize) {
-    return {
-      x: gridCellSize * Math.round(pos.x / gridCellSize),
-      y: gridCellSize * Math.round(pos.y / gridCellSize)
-    };
-  };
-
-  exports.snapToGridFromEquation = function(pos, equation) {
-    var getClosest, oneOver, trunc;
-    getClosest = function(n, closest) {
-      if (closest == null) {
-        closest = 0;
-      }
-      if (equation(n) < pos) {
-        return getClosest(n + 1, equation(n));
-      } else {
-        return [n, closest];
-      }
-    };
-    trunc = getClosest(0);
-    oneOver = equation(trunc[0]);
-    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
-      return oneOver;
-    } else {
-      return trunc[1];
-    }
-  };
-
-  exports.isIn = function(arr, pos) {
-    return _.some(arr, function(item) {
-      return _.isEqual(pos, item);
-    });
-  };
-
-  exports.amountInBox = function(pos, box) {
-    var inboxx, inboxy;
-    inboxx = pos.x - box.left;
-    inboxy = pos.y - box.top;
-    return {
-      x: inboxx / (box.right - box.left),
-      y: 1 - (inboxy / (box.bottom - box.top))
-    };
-  };
-
-  window.positionLib = exports;
-
-}).call(this);
-
-
-},{"lodash":16}],19:[function(require,module,exports){
+},{"./draw.coffee":7,"./slider.coffee":12,"jquery-ui":23}],17:[function(require,module,exports){
 (function() {
   var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, guiInit, ui;
 
@@ -16746,7 +16691,68 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":6,"../gui_builder.coffee":7,"jquery":20,"jquery-ui":23}],22:[function(require,module,exports){
+},{"../dom/draw.coffee":7,"../gui_builder.coffee":8,"jquery-ui":23,"jquery":19}],20:[function(require,module,exports){
+(function() {
+  var _;
+
+  _ = require('lodash');
+
+  exports.isInBox = function(pos, box) {
+    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
+      return exports.amountInBox(pos, box);
+    }
+  };
+
+  exports.snapToGrid = function(pos, gridCellSize) {
+    return {
+      x: gridCellSize * Math.round(pos.x / gridCellSize),
+      y: gridCellSize * Math.round(pos.y / gridCellSize)
+    };
+  };
+
+  exports.snapToGridFromEquation = function(pos, equation) {
+    var getClosest, oneOver, trunc;
+    getClosest = function(n, closest) {
+      if (closest == null) {
+        closest = 0;
+      }
+      if (equation(n) < pos) {
+        return getClosest(n + 1, equation(n));
+      } else {
+        return [n, closest];
+      }
+    };
+    trunc = getClosest(0);
+    oneOver = equation(trunc[0]);
+    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
+      return oneOver;
+    } else {
+      return trunc[1];
+    }
+  };
+
+  exports.isIn = function(arr, pos) {
+    return _.some(arr, function(item) {
+      return _.isEqual(pos, item);
+    });
+  };
+
+  exports.amountInBox = function(pos, box) {
+    var inboxx, inboxy;
+    inboxx = pos.x - box.left;
+    inboxy = pos.y - box.top;
+    return {
+      x: inboxx / (box.right - box.left),
+      y: 1 - (inboxy / (box.bottom - box.top))
+    };
+  };
+
+  window.positionLib = exports;
+
+}).call(this);
+
+
+},{"lodash":18}],22:[function(require,module,exports){
 (function() {
   var draw, guiInit, json, ui;
 
@@ -16796,7 +16802,7 @@ return jQuery;
 }).call(this);
 
 
-},{"../dom/draw.coffee":6,"../gui_builder.coffee":7,"../dom/json.coffee":3,"jquery-ui":23}],23:[function(require,module,exports){
+},{"../dom/draw.coffee":7,"../gui_builder.coffee":8,"../dom/json.coffee":3,"jquery-ui":23}],23:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31804,5 +31810,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":20}]},{},[8,14,5,1,2,10,6,3,12,21,7,18,4,17,15,9,11,19,22,13])
+},{"jquery":19}]},{},[6,15,5,2,1,10,7,3,12,21,8,16,4,14,20,9,11,17,22,13])
 ;

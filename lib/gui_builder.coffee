@@ -14,10 +14,7 @@ exports.init = (area)->
   # Anything that does, goes in the link init.
   #
 
-  # potentially remove old container.
-  if (area.container?)
-    area.container.remove()
-  area.container = app.draw("<div class=\"area-ct\"></div>")
+  app.areaDraw.drawContainer(app, area)
 
   #init area
   area = app.areaClass.init(area)

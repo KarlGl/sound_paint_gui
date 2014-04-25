@@ -1,12 +1,21 @@
 # 
 # This draws a new world.
 #
+app = require './app.coffee'
 draw = require './dom/draw.coffee'
 colors = require './color_theme.coffee'
 block = require './block.coffee'
 colors = colors.colors
 draw = draw.draw
 
+#
+# potentially remove old container.
+# and make new one
+#
+exports.drawContainer = (app, area)->
+  if (area.container?)
+    area.container.remove()
+  area.container = app.draw("<div class=\"area-ct\"></div>")
 
 exports.setSize = (areaParam)->
   areaParam.face.attr('width', areaParam.state.len)
