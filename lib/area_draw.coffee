@@ -5,8 +5,26 @@ app = require './app.coffee'
 draw = require './dom/draw.coffee'
 colors = require './color_theme.coffee'
 block = require './block.coffee'
-colors = colors.colors
-draw = draw.draw
+draw = draw
+
+
+# Draw grids covering the area.
+exports.drawGrids = (app, area)->
+  fillFuncs = 
+    x: (point)->
+      area.context.fillRect(point, 0, 1, area.state.len)
+    y: (point)->
+      area.context.fillRect(0, (area.state.len - point), area.state.len, 1)
+  ['x', 'y'].forEach (axis)->
+    hash = area.grid[axis]
+    if area.state['gridIsShow_' + axis]
+      area.context.fillStyle = app.colors.inactive
+      fill = (n)->
+        # side effects in if statement
+        if (pos = hash.get(n)) < 1
+          fillFuncs[axis](pos * area.state.len)
+          fill(n+1)
+      fill(0)
 
 #
 # potentially remove old container.

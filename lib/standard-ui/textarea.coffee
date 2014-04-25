@@ -2,7 +2,6 @@
 ui = require 'jquery-ui';
 draw = require '../dom/draw.coffee'
 guiInit = require '../gui_builder.coffee'
-json = require '../dom/json.coffee'
 
 exports.dealWithChange = (element, val)->
     old = null
@@ -17,13 +16,17 @@ exports.dealWithChange = (element, val)->
     # re init the whole app with those changes.
     guiInit.init(element.params.parent)
 
+exports.renderState = (area)->
+  area.stateTextArea.val(area.app.json.stringify(area.state))
+
 exports.init = (params)->
-
   if params.parent.state.visibleGuiControls[params.key]
-    element = draw.draw("<textarea class=\"#{params.key}\">", params.parent.container)
 
-    (params.parent.renderState = ->
-      element.val(json.stringify(params.parent.state)))()
+    element = draw("<textarea class=\"#{params.key}\">", params.parent.container)
+    
+    params.parent.stateTextArea = element
+
+    exports.renderState(params.parent)
       
     element.params = 
       parent: params.parent

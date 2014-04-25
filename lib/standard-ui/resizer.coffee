@@ -8,14 +8,17 @@ guiInit = require '../gui_builder.coffee'
 BOTTOM_CONTROL_SIZE = 280
 RIGHT_CONTROL_SIZE = 20
 
-exports.setToMaximum = (element)->
-  largest = Math.min((root = element.params.parent.rootElement).width() - RIGHT_CONTROL_SIZE, 
-    (root.height() - BOTTOM_CONTROL_SIZE))
+exports.setToMaximum = (app, element)->
+  # snap to max len at the start?
+  # can't be in the area init, that can be called seperately to this.
+  if (app.defaultState.visibleGuiControls.len)
+    largest = Math.min((root = element.params.parent.rootElement).width() - RIGHT_CONTROL_SIZE, 
+      (root.height() - BOTTOM_CONTROL_SIZE))
 
-  # stop infinate loop
-  if (element.params.parent.state['len'] != largest)
-    element.val(largest)
-    exports.dealWithChange(element, largest)
+    # stop infinate loop
+    if (element.params.parent.state['len'] != largest)
+      element.val(largest)
+      exports.dealWithChange(element, largest)
 
 exports.dealWithChange = (element, val)->
     old = element.params.parent.state['len']
@@ -27,9 +30,9 @@ exports.dealWithChange = (element, val)->
 # parent must respond to the redraw method
 exports.init = (params)->
 
-  element = draw.draw("<input type=\"number\" class=\"resize\">", params.parent.container)
+  element = draw("<input type=\"number\" class=\"resize\">", params.parent.container)
 
-  elementMaximize = draw.draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", params.parent.container)
+  elementMaximize = draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", params.parent.container)
 
   element.val(params.parent.state['len'])
   element.css('width', 46)

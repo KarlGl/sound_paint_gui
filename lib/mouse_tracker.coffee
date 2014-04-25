@@ -4,7 +4,6 @@
 #
 
 colors = require './color_theme.coffee'
-colors = colors.colors
 draw = require './dom/draw.coffee'
 _ = require 'lodash'
 
@@ -12,14 +11,15 @@ _ = require 'lodash'
 $ = require 'jquery'
 
 
-exports.init = (params)->
-  callbacks = params.callbacks
+exports.init = (app, area)->
+  callbacks = area.mouseCallbacks
+  size = 10
   down = false
-  # face = draw.draw('<div id="mouse-cursor"></div>')
+  # face = draw('<div id="mouse-cursor"></div>')
   if (face?)
     face.css('position', 'absolute')
-      .css('width', params.size + 'px')
-      .css('height', params.size + 'px')
+      .css('width', size + 'px')
+      .css('height', size + 'px')
       .css('background-color', colors.mouse.inactive)
 
   defaultState = 

@@ -16,7 +16,7 @@ exports.init = (params, callbacks, overrides)->
         key: params.key
       )
 
-    element = draw.draw("<div id=\"#{params.key}\"></div>", params.parent.container)
+    element = draw("<div id=\"#{params.key}\"></div>", params.parent.container)
 
     element.css('width', params.parent.face.width())
 

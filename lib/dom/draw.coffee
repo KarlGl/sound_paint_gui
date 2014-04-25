@@ -5,7 +5,7 @@
 $ = require 'jquery'
 ui = require 'jquery-ui';
 
-exports.draw = (child, parent)->
+module.exports = (child, parent)->
   if (!parent?)
     parent = $('.sound-paint')
   c=$(child)

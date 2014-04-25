@@ -1,6 +1,8 @@
-app = require '../app.coffee'
+#
+# The tools such as pen, eraser, etc.
+#
 
-exports.init = (area)->
+exports.init = (app, area)->
   #
   # save all tools in state, to corresponding tools on the direct area object.
   area.tools = []

@@ -13,7 +13,7 @@ textarea = require './standard-ui/textarea.coffee'
 exports.getGlobalCallbacks = ->
   window.callbacks
 
-exports.init = (area)->
+exports.init = (area)->  
   callbacks = exports.getGlobalCallbacks()
 
   btnHash = buttons.init(area)
@@ -54,3 +54,5 @@ exports.init = (area)->
       callbacks: callbacks
     )
     resizerEl
+  else
+    area

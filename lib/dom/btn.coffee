@@ -5,12 +5,11 @@
 ui = require 'jquery-ui';
 draw = require './draw.coffee'
 colors = require('../color_theme.coffee')
-colors = colors.colors
 
 size = 30
 
 exports.init = (params)->
-  btn = draw.draw("<div id=\"#{params.id}\">#{params.inner}</div>", params.parent.container)
+  btn = draw("<div id=\"#{params.id}\">#{params.inner}</div>", params.parent.container)
   # btn.css('width', size)
   btn.css('height', size)
   btn.addClass('btn')
