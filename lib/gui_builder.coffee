@@ -3,6 +3,9 @@
 #
 app = require './app.coffee'
 
+exports.restartArea = (area)->
+  exports.init(area)
+
 exports.init = (area)->
   #
   # Anything that doesn't need to call the globally accessable predefined callbacks, 
@@ -18,9 +21,6 @@ exports.init = (area)->
 
   #init area
   area = app.areaClass.init(area)
-
-  area.restart = ->
-    exports.init(area)
 
 
   # Draw grids.
@@ -45,7 +45,7 @@ exports.init = (area)->
   #
   resizerEl = app.link.init(area)
 
-  tools.init(area)
+  app.tools.init(area)
 
   app.mouseTracker.init
     size: 10
@@ -126,7 +126,7 @@ exports.initProgram = ->
 
     # snap to max len at the start?
   if (area.state.visibleGuiControls.len)
-    resizer.setToMaximum(initialized)
+    app.resizer.setToMaximum(initialized)
 
 setTimeout(exports.initProgram,0)
 
