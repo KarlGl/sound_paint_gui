@@ -2,54 +2,62 @@
 $ = require 'jquery';
 ui = require 'jquery-ui';
 draw = require '../dom/draw.coffee'
-guiInit = require '../gui_builder.coffee'
 
 # Size of the controls to add onto canvas size
 BOTTOM_CONTROL_SIZE = 280
 RIGHT_CONTROL_SIZE = 20
 
-exports.setToMaximum = (app, element)->
-  # snap to max len at the start?
-  # can't be in the area init, that can be called seperately to this.
-  if (app.defaultState.visibleGuiControls.len)
-    largest = Math.min((root = element.params.parent.rootElement).width() - RIGHT_CONTROL_SIZE, 
-      (root.height() - BOTTOM_CONTROL_SIZE))
+exports.init = (app)->
+  init: (area)->
+    out = 
+      setToMaximum: ()->
+        # snap to max len at the start?
+        # can't be in the area init, that can be called seperately to this.
+        if (area.state.visibleGuiControls.len)
+          largest = Math.min((root = area.rootElement).width() - RIGHT_CONTROL_SIZE, 
+            (root.height() - BOTTOM_CONTROL_SIZE))
 
-    # stop infinate loop
-    if (element.params.parent.state['len'] != largest)
-      element.val(largest)
-      exports.dealWithChange(element, largest)
+          # stop infinate loop
+          if (area.state['len'] != largest)
+            area.resizerElement.val(largest)
+            this.dealWithChange(area.resizerElement, largest)
 
-exports.dealWithChange = (element, val)->
-    old = element.params.parent.state['len']
-    element.params.parent.state['len'] = parseInt(val)
-    element.params.cb(old)
-    guiInit.init(element.params.parent)
+      dealWithChange: (val)->
+        old = area.state['len']
+        area.state['len'] = parseInt(val)
+        area.resizerElement.params.cb(old)
 
-# 
-# parent must respond to the redraw method
-exports.init = (params)->
+        area.restartGUI()
 
-  element = draw("<input type=\"number\" class=\"resize\">", params.parent.container)
+      # 
+      # parent must respond to the redraw method
+      init: (params)->
+        element = draw("<input type=\"number\" class=\"resize\">", area.container)
+        area.resizerElement = element
 
-  elementMaximize = draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", params.parent.container)
 
-  element.val(params.parent.state['len'])
-  element.css('width', 46)
+        elementMaximize = draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", area.container)
 
-  element.params = 
-    parent: params.parent
-    cb: (old)->
-      params.callbacks[params.key](
-        area: params.parent
-        old: old
-        key: params.key
-      )
+        element.val(area.state['len'])
+        element.css('width', 46)
 
-  elementMaximize.click ->
-    exports.setToMaximum(element)
+        element.params = 
+          parent: area
+          cb: (old)->
+            params.callbacks[params.key](
+              area: area
+              old: old
+              key: params.key
+            )
 
-  element.change (event)->
-    exports.dealWithChange(element, event.target.value)
+        elementMaximize.click ->
+          exports.setToMaximum(element)
 
-  element
+        element.change (event)->
+          exports.dealWithChange(element, event.target.value)
+
+        element
+
+    # call right away
+    out.init()
+    out

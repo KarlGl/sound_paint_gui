@@ -26,17 +26,17 @@ module.exports =
           areaDraw: (require './area_draw.coffee')
           areaUnits: (require './area_units.coffee')
           block: (require './block.coffee')
+          link: (require './link.coffee')
+          tools: (require './standard-ui/tools.coffee')
+          resizer: (require './standard-ui/resizer.coffee')
+          saveLoad: (require './standard-ui/save_load.coffee')
         }, this.requireAndInit.bind(this)
 
       this.guiBuilder = require './gui_builder.coffee' 
       this.draw = require './dom/draw.coffee'
       this.soundHelpers = window.SPhelpers # from other project
-      this.link = require './link.coffee'
-      this.resizer = require './standard-ui/resizer.coffee'
-      this.tools = require './standard-ui/tools.coffee'
       this.defaultState = require './defaults/default_state.coffee'
       this.json = require './dom/json.coffee'
-      this.textArea = require './standard-ui/textarea.coffee'
       this.newInstance = (area)->
         # 
         # use the same keys as class (but reset the keys that use an area).
@@ -54,6 +54,14 @@ module.exports =
           'areaDraw'
           'areaUnits'
           'block'
+          'resizer'
+          'saveLoad'
+          #
+          # Many of these have to be before 'link'
+          #
+          'link'
+          'tools'
+          'mouseTracker'
         ].forEach (key)->
           area.app.requireAndInit(key)
   }

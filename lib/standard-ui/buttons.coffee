@@ -26,7 +26,6 @@ exports.buttonList = [
   # inner: 'always playing'
 ]
 
-
 exports.init = (area)->
 
   btnHash = {}
