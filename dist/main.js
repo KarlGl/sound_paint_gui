@@ -1,10 +1,11 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  exports.init = function() {
+  exports.init = function(area) {
     return {
-      inactive: 'rgb(209, 209, 209)',
-      barelyThere: 'rgb(239, 239, 239)',
-      active: 'green'
+      init: function(block) {
+        area.context.fillStyle = 'black';
+        return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
+      }
     };
   };
 
@@ -12,6 +13,20 @@
 
 
 },{}],2:[function(require,module,exports){
+(function() {
+  exports.init = function() {
+    return {
+      inactive: 'rgb(209, 209, 209)',
+      barelyThere: 'rgb(239, 239, 239)',
+      active: 'green',
+      primary: 'black'
+    };
+  };
+
+}).call(this);
+
+
+},{}],3:[function(require,module,exports){
 (function() {
   module.exports = {
     len: 300,
@@ -45,7 +60,7 @@
       }
     ],
     toolActive: 'pen',
-    optionActive: 'sqr',
+    optionActive: 'sin',
     waveforms: [
       {
         name: 'sin',
@@ -129,18 +144,6 @@
           }, {
             "x": 0.9800000000000001,
             "y": 0.2961258199041833
-          }, {
-            "x": 0.04,
-            "y": 0.01964781652870868
-          }, {
-            "x": 0.04,
-            "y": 0.039999941218240936
-          }, {
-            "x": 0.02,
-            "y": 0.039999941218240936
-          }, {
-            "x": 0.02,
-            "y": 0.01964781652870868
           }
         ]
       }, {
@@ -148,20 +151,6 @@
         color: "#0000ff"
       }
     ]
-  };
-
-}).call(this);
-
-
-},{}],3:[function(require,module,exports){
-(function() {
-  exports.init = function(area) {
-    return {
-      init: function(block) {
-        area.context.fillStyle = 'black';
-        return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
-      }
-    };
   };
 
 }).call(this);
@@ -522,6 +511,73 @@
 
 },{}],14:[function(require,module,exports){
 (function() {
+  exports.init = function(area) {
+    var addPoint, canvasDiv, color, context, drawExistingPoints, drawPoint, getMouseXY, lens, mouseX, mouseY, points;
+    lens = {
+      point: {
+        w: 6,
+        h: 6
+      },
+      canvas: {
+        w: area.state.len,
+        h: area.state.len
+      }
+    };
+    color = area.app.colors.primary;
+    mouseX = 0;
+    mouseY = 0;
+    getMouseXY = function(e) {
+      mouseX = e.pageX;
+      mouseY = e.pageY;
+      if (mouseX < 0) {
+        mouseX = 0;
+      }
+      if (mouseY < 0) {
+        mouseY = 0;
+      }
+      mouseX = mouseX - canvasDiv.offset().left;
+      mouseY = mouseY - canvasDiv.offset().top;
+      return true;
+    };
+    addPoint = function() {
+      var point;
+      point = {
+        x: mouseX / lens.canvas.w,
+        y: mouseY / lens.canvas.h
+      };
+      area.currentWaveformPoints().push(point);
+      area.app.saveLoad.renderState();
+      return drawPoint(point);
+    };
+    drawPoint = function(point) {
+      return area.waveformEditor.context.fillRect((point.x * lens.canvas.w) - (lens.point.w / 2), (point.y * lens.canvas.h) - (lens.point.h / 2), lens.point.w, lens.point.h);
+    };
+    drawExistingPoints = function() {
+      return area.currentWaveformPoints().forEach(function(point) {
+        return drawPoint(point);
+      });
+    };
+    area.currentWaveformPoints = function(point) {
+      var name, _ref;
+      name = this.state.optionActive;
+      return (_ref = area.app._.find(this.state.waveforms, function(waveform) {
+        return waveform.name === name;
+      })) != null ? _ref.points : void 0;
+    };
+    area.waveformEditor = {};
+    area.waveformEditor.face = canvasDiv = area.app.draw("<canvas class=\"waveform-editor\"></canvas><br/>", area.container).attr('width', area.state.len).attr('height', area.state.len);
+    area.waveformEditor.context = context = canvasDiv[0].getContext("2d");
+    context.fillStyle = color;
+    points = drawExistingPoints();
+    canvasDiv.mousemove(getMouseXY);
+    return canvasDiv.click(addPoint);
+  };
+
+}).call(this);
+
+
+},{}],15:[function(require,module,exports){
+(function() {
   var draw;
 
   draw = require('./dom/draw.coffee');
@@ -607,7 +663,7 @@
 }).call(this);
 
 
-},{"./dom/draw.coffee":15}],16:[function(require,module,exports){
+},{"./dom/draw.coffee":16}],17:[function(require,module,exports){
 (function() {
   var positionLib;
 
@@ -663,7 +719,7 @@
 }).call(this);
 
 
-},{"./positions/positions.coffee":17}],18:[function(require,module,exports){
+},{"./positions/positions.coffee":18}],19:[function(require,module,exports){
 (function() {
   var createDepenency;
 
@@ -679,13 +735,13 @@
   };
 
   module.exports = function() {
-    return [createDepenency('guiBuilder', require('./sound_paint_gui.coffee')), createDepenency('draw', require('./dom/draw.coffee')), createDepenency('soundHelpers', window.SPhelpers), createDepenency('defaultState', require('./defaults/default_state.coffee')), createDepenency('json', require('./dom/json.coffee')), createDepenency('rootElement', require('./dom/root_element.coffee'), ['app']), createDepenency('colors', require('./color_theme.coffee'), ['app']), createDepenency('gridEquations', require('./positions/grid_equations.coffee'), ['app']), createDepenency('toggleBtn', require('./dom/toggle_btn.coffee'), ['area']), createDepenency('block', require('./block.coffee'), ['area']), createDepenency('areaUnits', require('./area_units.coffee'), ['area']), createDepenency('areaDraw', require('./area_draw.coffee'), ['area']), createDepenency('saveLoad', require('./standard-ui/save_load.coffee'), ['area']), createDepenency('resizer', require('./standard-ui/resizer.coffee'), ['area']), createDepenency('exclusiveButton', require('./standard-ui/exclusive_button.coffee'), ['area']), createDepenency('link', require('./link.coffee'), ['area']), createDepenency('tools', require('./standard-ui/tools.coffee'), ['area']), createDepenency('mouseTracker', require('./mouse_tracker.coffee'), ['area'])];
+    return [createDepenency('guiBuilder', require('./sound_paint_gui.coffee')), createDepenency('draw', require('./dom/draw.coffee')), createDepenency('soundHelpers', window.SPhelpers), createDepenency('defaultState', require('./defaults/default_state.coffee')), createDepenency('json', require('./dom/json.coffee')), createDepenency('rootElement', require('./dom/root_element.coffee'), ['app']), createDepenency('colors', require('./color_theme.coffee'), ['app']), createDepenency('gridEquations', require('./positions/grid_equations.coffee'), ['app']), createDepenency('toggleBtn', require('./dom/toggle_btn.coffee'), ['area']), createDepenency('block', require('./block.coffee'), ['area']), createDepenency('areaUnits', require('./area_units.coffee'), ['area']), createDepenency('areaDraw', require('./area_draw.coffee'), ['area']), createDepenency('saveLoad', require('./standard-ui/save_load.coffee'), ['area']), createDepenency('resizer', require('./standard-ui/resizer.coffee'), ['area']), createDepenency('exclusiveButton', require('./standard-ui/exclusive_button.coffee'), ['area']), createDepenency('link', require('./link.coffee'), ['area']), createDepenency('tools', require('./standard-ui/tools.coffee'), ['area']), createDepenency('waveformEditor', require('./standard-ui/waveform_editor.coffee'), ['area']), createDepenency('mouseTracker', require('./mouse_tracker.coffee'), ['area'])];
   };
 
 }).call(this);
 
 
-},{"./sound_paint_gui.coffee":19,"./dom/draw.coffee":15,"./defaults/default_state.coffee":2,"./dom/json.coffee":4,"./dom/root_element.coffee":5,"./color_theme.coffee":1,"./positions/grid_equations.coffee":8,"./dom/toggle_btn.coffee":6,"./block.coffee":3,"./area_units.coffee":16,"./area_draw.coffee":14,"./standard-ui/save_load.coffee":12,"./standard-ui/resizer.coffee":11,"./standard-ui/exclusive_button.coffee":10,"./link.coffee":20,"./standard-ui/tools.coffee":13,"./mouse_tracker.coffee":21}],20:[function(require,module,exports){
+},{"./sound_paint_gui.coffee":20,"./dom/draw.coffee":16,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./positions/grid_equations.coffee":8,"./dom/toggle_btn.coffee":6,"./block.coffee":1,"./area_units.coffee":17,"./area_draw.coffee":15,"./standard-ui/save_load.coffee":12,"./standard-ui/resizer.coffee":11,"./link.coffee":21,"./standard-ui/exclusive_button.coffee":10,"./standard-ui/tools.coffee":13,"./standard-ui/waveform_editor.coffee":14,"./mouse_tracker.coffee":22}],21:[function(require,module,exports){
 (function() {
   var buttons, playSlider, sliderWithMaxAndMin;
 
@@ -738,7 +794,7 @@
 }).call(this);
 
 
-},{"./standard-ui/play_slider.coffee":22,"./standard-ui/buttons.coffee":9,"./dom/slider_with_max.coffee":23}],19:[function(require,module,exports){
+},{"./standard-ui/play_slider.coffee":23,"./standard-ui/buttons.coffee":9,"./dom/slider_with_max.coffee":24}],20:[function(require,module,exports){
 (function() {
   var app;
 
@@ -750,8 +806,7 @@
       app.newInstance();
       return exports.init(area);
     };
-    app.newAreaInstance(area);
-    return area.app.resizer.setToMaximum();
+    return app.newAreaInstance(area);
   };
 
   exports.initProgram = function() {
@@ -768,7 +823,7 @@
 }).call(this);
 
 
-},{"./dependency_loader.coffee":24}],22:[function(require,module,exports){
+},{"./dependency_loader.coffee":25}],23:[function(require,module,exports){
 (function() {
   var slider;
 
@@ -786,7 +841,52 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":25}],21:[function(require,module,exports){
+},{"../dom/slider.coffee":26}],25:[function(require,module,exports){
+(function() {
+  var dependencyList, _;
+
+  _ = require('lodash');
+
+  dependencyList = require('./dependency_list.coffee');
+
+  module.exports = {
+    requireAndInit: function(dependency) {
+      return this[dependency.key] = dependency.instance.init(this);
+    },
+    newInstance: function() {
+      var toInitialize,
+        _this = this;
+      toInitialize = {
+        dependencies: dependencyList(),
+        "for": function(typeToInitWith) {
+          return this.dependencies.filter(function(dependency) {
+            if ((dependency.initializeWith != null)) {
+              return _.contains(dependency.initializeWith, typeToInitWith);
+            }
+          });
+        }
+      };
+      this._ = _;
+      this.$ = require('jquery');
+      _.forEach(toInitialize.dependencies, function(dependency) {
+        return _this[dependency.key] = dependency.instance;
+      });
+      _.forEach(toInitialize["for"]('app'), this.requireAndInit.bind(this));
+      return this.newAreaInstance = function(area) {
+        var requireAndInit;
+        area.app = _.clone(this);
+        requireAndInit = function(dependency) {
+          return area.app[dependency.key] = area.app[dependency.key].init(area);
+        };
+        return _.forEach(toInitialize["for"]('area'), requireAndInit);
+      };
+    }
+  };
+
+}).call(this);
+
+
+},{"./dependency_list.coffee":19,"lodash":27,"jquery":28}],22:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -854,7 +954,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":1,"./dom/draw.coffee":15,"lodash":26,"jquery":27}],26:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":16,"lodash":27,"jquery":28}],27:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7642,198 +7742,7 @@
 }.call(this));
 
 })(window)
-},{}],24:[function(require,module,exports){
-(function() {
-  var dependencyList, _;
-
-  _ = require('lodash');
-
-  dependencyList = require('./dependency_list.coffee');
-
-  module.exports = {
-    requireAndInit: function(dependency) {
-      return this[dependency.key] = dependency.instance.init(this);
-    },
-    newInstance: function() {
-      var toInitialize,
-        _this = this;
-      toInitialize = {
-        dependencies: dependencyList(),
-        "for": function(typeToInitWith) {
-          return this.dependencies.filter(function(dependency) {
-            if ((dependency.initializeWith != null)) {
-              return _.contains(dependency.initializeWith, typeToInitWith);
-            }
-          });
-        }
-      };
-      this._ = _;
-      this.$ = require('jquery');
-      _.forEach(toInitialize.dependencies, function(dependency) {
-        return _this[dependency.key] = dependency.instance;
-      });
-      _.forEach(toInitialize["for"]('app'), this.requireAndInit.bind(this));
-      return this.newAreaInstance = function(area) {
-        var requireAndInit;
-        area.app = _.clone(this);
-        requireAndInit = function(dependency) {
-          return area.app[dependency.key] = area.app[dependency.key].init(area);
-        };
-        return _.forEach(toInitialize["for"]('area'), requireAndInit);
-      };
-    }
-  };
-
-}).call(this);
-
-
-},{"./dependency_list.coffee":18,"lodash":26,"jquery":27}],25:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params, callbacks, overrides) {
-    var cb, element, percision;
-    if (params.parent.state.visibleGuiControls[params.key]) {
-      cb = function(old) {
-        return callbacks[params.key]({
-          area: params.parent,
-          old: old,
-          key: params.key
-        });
-      };
-      element = draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
-      element.css('width', params.parent.face.width());
-      percision = 100000;
-      element.slider({
-        min: 0,
-        max: overrides ? percision * overrides.max : percision,
-        change: function(event, ui) {
-          var old;
-          old = params.parent.state[params.key];
-          params.parent.state[params.key] = ui.value / percision;
-          return cb(old);
-        }
-      });
-      element.slider('option', 'value', params.parent.state[params.key] * percision);
-      return element;
-    }
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":15,"jquery-ui":28}],15:[function(require,module,exports){
-(function() {
-  var $, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  module.exports = function(child, parent) {
-    var c;
-    if (parent == null) {
-      parent = $('.sound-paint');
-    }
-    c = $(child);
-    parent.append(c);
-    return c;
-  };
-
-  if (typeof window !== 'undefined') {
-    window.jq = $;
-  }
-
-}).call(this);
-
-
-},{"jquery-ui":28,"jquery":27}],23:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":15,"./slider.coffee":25,"jquery-ui":28}],17:[function(require,module,exports){
-(function() {
-  var _;
-
-  _ = require('lodash');
-
-  exports.isInBox = function(pos, box) {
-    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
-      return exports.amountInBox(pos, box);
-    }
-  };
-
-  exports.snapToGrid = function(pos, gridCellSize) {
-    return {
-      x: gridCellSize * Math.round(pos.x / gridCellSize),
-      y: gridCellSize * Math.round(pos.y / gridCellSize)
-    };
-  };
-
-  exports.snapToGridFromEquation = function(pos, equation) {
-    var getClosest, oneOver, trunc;
-    getClosest = function(n, closest) {
-      if (closest == null) {
-        closest = 0;
-      }
-      if (equation(n) < pos) {
-        return getClosest(n + 1, equation(n));
-      } else {
-        return [n, closest];
-      }
-    };
-    trunc = getClosest(0);
-    oneOver = equation(trunc[0]);
-    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
-      return oneOver;
-    } else {
-      return trunc[1];
-    }
-  };
-
-  exports.isIn = function(arr, pos) {
-    return _.some(arr, function(item) {
-      return _.isEqual(pos, item);
-    });
-  };
-
-  exports.amountInBox = function(pos, box) {
-    var inboxx, inboxy;
-    inboxx = pos.x - box.left;
-    inboxy = pos.y - box.top;
-    return {
-      x: inboxx / (box.right - box.left),
-      y: 1 - (inboxy / (box.bottom - box.top))
-    };
-  };
-
-  window.positionLib = exports;
-
-}).call(this);
-
-
-},{"lodash":26}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16947,7 +16856,153 @@ return jQuery;
 }));
 
 })()
-},{}],28:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
+(function() {
+  var $, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  module.exports = function(child, parent) {
+    var c;
+    if (parent == null) {
+      parent = $('.sound-paint');
+    }
+    c = $(child);
+    parent.append(c);
+    return c;
+  };
+
+  if (typeof window !== 'undefined') {
+    window.jq = $;
+  }
+
+}).call(this);
+
+
+},{"jquery":28,"jquery-ui":29}],26:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    if (params.parent.state.visibleGuiControls[params.key]) {
+      cb = function(old) {
+        return callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
+      };
+      element = draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
+      element.css('width', params.parent.face.width());
+      percision = 100000;
+      element.slider({
+        min: 0,
+        max: overrides ? percision * overrides.max : percision,
+        change: function(event, ui) {
+          var old;
+          old = params.parent.state[params.key];
+          params.parent.state[params.key] = ui.value / percision;
+          return cb(old);
+        }
+      });
+      element.slider('option', 'value', params.parent.state[params.key] * percision);
+      return element;
+    }
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":16,"jquery-ui":29}],18:[function(require,module,exports){
+(function() {
+  var _;
+
+  _ = require('lodash');
+
+  exports.isInBox = function(pos, box) {
+    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
+      return exports.amountInBox(pos, box);
+    }
+  };
+
+  exports.snapToGrid = function(pos, gridCellSize) {
+    return {
+      x: gridCellSize * Math.round(pos.x / gridCellSize),
+      y: gridCellSize * Math.round(pos.y / gridCellSize)
+    };
+  };
+
+  exports.snapToGridFromEquation = function(pos, equation) {
+    var getClosest, oneOver, trunc;
+    getClosest = function(n, closest) {
+      if (closest == null) {
+        closest = 0;
+      }
+      if (equation(n) < pos) {
+        return getClosest(n + 1, equation(n));
+      } else {
+        return [n, closest];
+      }
+    };
+    trunc = getClosest(0);
+    oneOver = equation(trunc[0]);
+    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
+      return oneOver;
+    } else {
+      return trunc[1];
+    }
+  };
+
+  exports.isIn = function(arr, pos) {
+    return _.some(arr, function(item) {
+      return _.isEqual(pos, item);
+    });
+  };
+
+  exports.amountInBox = function(pos, box) {
+    var inboxx, inboxy;
+    inboxx = pos.x - box.left;
+    inboxy = pos.y - box.top;
+    return {
+      x: inboxx / (box.right - box.left),
+      y: 1 - (inboxy / (box.bottom - box.top))
+    };
+  };
+
+  window.positionLib = exports;
+
+}).call(this);
+
+
+},{"lodash":27}],24:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":16,"./slider.coffee":26,"jquery-ui":29}],29:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31955,5 +32010,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":27}]},{},[14,16,3,1,2,18,24,15,4,5,25,23,6,20,7,21,8,17,19,9,10,22,11,12,13])
+},{"jquery":28}]},{},[15,17,1,2,3,19,25,16,4,5,26,24,6,21,7,22,8,18,20,9,10,23,11,12,13,14])
 ;

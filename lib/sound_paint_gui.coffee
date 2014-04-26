@@ -24,7 +24,7 @@ exports.init = (area)->
   #
   app.newAreaInstance(area)
 
-  area.app.resizer.setToMaximum()
+  # area.app.resizer.setToMaximum()
 
 
 # the big bang...
