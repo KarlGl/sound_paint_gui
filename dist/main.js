@@ -35,6 +35,15 @@
 
 },{}],3:[function(require,module,exports){
 (function() {
+  var i = 0
+        var len = 1000
+        var out = [];
+        for (i=0; i<len; i++) {
+          out[i] = { 
+            x: i/len,
+            y: (Math.sin(2 * Math.PI * (i/len)) + 1) / 2
+          }
+        };
   module.exports = {
     len: 300,
     blockSize: 0.02,
@@ -82,90 +91,11 @@
       {
         name: 'sin',
         color: "#6a00ff",
-        points: [
-          {
-            "x": 0.02,
-            "y": 0.5393626945319635
-          }, {
-            "x": 0.16,
-            "y": 0.6834529792910562
-          }, {
-            "x": 0.28,
-            "y": 0.8649952974693266
-          }, {
-            "x": 0.36,
-            "y": 0.6834529792910562
-          }, {
-            "x": 0.42000000000000004,
-            "y": 0.5723267634369178
-          }, {
-            "x": 0.46,
-            "y": 0.5082487538799972
-          }, {
-            "x": 0.46,
-            "y": 0.47888110191672306
-          }, {
-            "x": 0.46,
-            "y": 0.45116172713603314
-          }, {
-            "x": 0.48,
-            "y": 0.45116172713603314
-          }, {
-            "x": 0.48,
-            "y": 0.42499811898672546
-          }, {
-            "x": 0.5,
-            "y": 0.4003029591280917
-          }, {
-            "x": 0.5,
-            "y": 0.37699383001397097
-          }, {
-            "x": 0.52,
-            "y": 0.3549929398326992
-          }, {
-            "x": 0.56,
-            "y": 0.3146262945331458
-          }, {
-            "x": 0.56,
-            "y": 0.2961258199041833
-          }, {
-            "x": 0.5800000000000001,
-            "y": 0.26218164350642875
-          }, {
-            "x": 0.6,
-            "y": 0.26218164350642875
-          }, {
-            "x": 0.64,
-            "y": 0.24662465655377183
-          }, {
-            "x": 0.68,
-            "y": 0.24662465655377183
-          }, {
-            "x": 0.72,
-            "y": 0.24662465655377183
-          }, {
-            "x": 0.78,
-            "y": 0.24662465655377183
-          }, {
-            "x": 0.8400000000000001,
-            "y": 0.26218164350642875
-          }, {
-            "x": 0.88,
-            "y": 0.2786636955742515
-          }, {
-            "x": 0.92,
-            "y": 0.2786636955742515
-          }, {
-            "x": 0.96,
-            "y": 0.2961258199041833
-          }, {
-            "x": 0.9800000000000001,
-            "y": 0.2961258199041833
-          }
-        ]
+        points: out
       }, {
         name: 'sqr',
-        color: "#0000ff"
+        color: "#0000ff",
+        points: []
       }
     ]
   };
@@ -16895,28 +16825,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":28,"jquery-ui":29}],24:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":16,"./slider.coffee":26,"jquery-ui":29}],26:[function(require,module,exports){
+},{"jquery":28,"jquery-ui":29}],26:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16955,7 +16864,28 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":16,"jquery-ui":29}],18:[function(require,module,exports){
+},{"./draw.coffee":16,"jquery-ui":29}],24:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":16,"./slider.coffee":26,"jquery-ui":29}],18:[function(require,module,exports){
 (function() {
   var _;
 

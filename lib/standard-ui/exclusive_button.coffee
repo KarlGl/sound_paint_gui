@@ -12,6 +12,8 @@ exports.init = (area)->
             # updates to area state
             area.state["#{params.key}Active"] = this.name
             area.app.saveLoad.renderState()
+
+            
             params.cssActive.call(this)
 
           else
