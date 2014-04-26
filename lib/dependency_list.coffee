@@ -29,6 +29,7 @@ module.exports = ->
     createDepenency('saveLoad', (require './standard-ui/save_load.coffee'), ['area'])
     createDepenency('resizer', (require './standard-ui/resizer.coffee'), ['area'])
     createDepenency('exclusiveButton', (require './standard-ui/exclusive_button.coffee'), ['area'])
+    # createDepenency('waveformEditor', (require './standard-ui/waveform_editor.coffee'), ['area'])
     createDepenency('link', (require './link.coffee'), ['area'])
     createDepenency('tools', (require './standard-ui/tools.coffee'), ['area'])
     createDepenency('mouseTracker', (require './mouse_tracker.coffee'), ['area'])

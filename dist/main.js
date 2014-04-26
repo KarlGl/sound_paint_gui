@@ -1,19 +1,5 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  exports.init = function(area) {
-    return {
-      init: function(block) {
-        area.context.fillStyle = 'black';
-        return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
-      }
-    };
-  };
-
-}).call(this);
-
-
-},{}],2:[function(require,module,exports){
-(function() {
   exports.init = function() {
     return {
       inactive: 'rgb(209, 209, 209)',
@@ -25,7 +11,7 @@
 }).call(this);
 
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 (function() {
   module.exports = {
     len: 300,
@@ -63,12 +49,119 @@
     waveforms: [
       {
         name: 'sin',
-        color: "#6a00ff"
+        color: "#6a00ff",
+        points: [
+          {
+            "x": 0.02,
+            "y": 0.5393626945319635
+          }, {
+            "x": 0.16,
+            "y": 0.6834529792910562
+          }, {
+            "x": 0.28,
+            "y": 0.8649952974693266
+          }, {
+            "x": 0.36,
+            "y": 0.6834529792910562
+          }, {
+            "x": 0.42000000000000004,
+            "y": 0.5723267634369178
+          }, {
+            "x": 0.46,
+            "y": 0.5082487538799972
+          }, {
+            "x": 0.46,
+            "y": 0.47888110191672306
+          }, {
+            "x": 0.46,
+            "y": 0.45116172713603314
+          }, {
+            "x": 0.48,
+            "y": 0.45116172713603314
+          }, {
+            "x": 0.48,
+            "y": 0.42499811898672546
+          }, {
+            "x": 0.5,
+            "y": 0.4003029591280917
+          }, {
+            "x": 0.5,
+            "y": 0.37699383001397097
+          }, {
+            "x": 0.52,
+            "y": 0.3549929398326992
+          }, {
+            "x": 0.56,
+            "y": 0.3146262945331458
+          }, {
+            "x": 0.56,
+            "y": 0.2961258199041833
+          }, {
+            "x": 0.5800000000000001,
+            "y": 0.26218164350642875
+          }, {
+            "x": 0.6,
+            "y": 0.26218164350642875
+          }, {
+            "x": 0.64,
+            "y": 0.24662465655377183
+          }, {
+            "x": 0.68,
+            "y": 0.24662465655377183
+          }, {
+            "x": 0.72,
+            "y": 0.24662465655377183
+          }, {
+            "x": 0.78,
+            "y": 0.24662465655377183
+          }, {
+            "x": 0.8400000000000001,
+            "y": 0.26218164350642875
+          }, {
+            "x": 0.88,
+            "y": 0.2786636955742515
+          }, {
+            "x": 0.92,
+            "y": 0.2786636955742515
+          }, {
+            "x": 0.96,
+            "y": 0.2961258199041833
+          }, {
+            "x": 0.9800000000000001,
+            "y": 0.2961258199041833
+          }, {
+            "x": 0.04,
+            "y": 0.01964781652870868
+          }, {
+            "x": 0.04,
+            "y": 0.039999941218240936
+          }, {
+            "x": 0.02,
+            "y": 0.039999941218240936
+          }, {
+            "x": 0.02,
+            "y": 0.01964781652870868
+          }
+        ]
       }, {
         name: 'sqr',
         color: "#0000ff"
       }
     ]
+  };
+
+}).call(this);
+
+
+},{}],3:[function(require,module,exports){
+(function() {
+  exports.init = function(area) {
+    return {
+      init: function(block) {
+        area.context.fillStyle = 'black';
+        return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
+      }
+    };
   };
 
 }).call(this);
@@ -592,7 +685,7 @@
 }).call(this);
 
 
-},{"./sound_paint_gui.coffee":19,"./dom/draw.coffee":15,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./positions/grid_equations.coffee":8,"./dom/toggle_btn.coffee":6,"./block.coffee":1,"./area_units.coffee":16,"./area_draw.coffee":14,"./standard-ui/save_load.coffee":12,"./standard-ui/resizer.coffee":11,"./standard-ui/exclusive_button.coffee":10,"./link.coffee":20,"./standard-ui/tools.coffee":13,"./mouse_tracker.coffee":21}],20:[function(require,module,exports){
+},{"./sound_paint_gui.coffee":19,"./dom/draw.coffee":15,"./defaults/default_state.coffee":2,"./dom/json.coffee":4,"./dom/root_element.coffee":5,"./color_theme.coffee":1,"./positions/grid_equations.coffee":8,"./dom/toggle_btn.coffee":6,"./block.coffee":3,"./area_units.coffee":16,"./area_draw.coffee":14,"./standard-ui/save_load.coffee":12,"./standard-ui/resizer.coffee":11,"./standard-ui/exclusive_button.coffee":10,"./link.coffee":20,"./standard-ui/tools.coffee":13,"./mouse_tracker.coffee":21}],20:[function(require,module,exports){
 (function() {
   var buttons, playSlider, sliderWithMaxAndMin;
 
@@ -693,52 +786,7 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":25}],24:[function(require,module,exports){
-(function() {
-  var dependencyList, _;
-
-  _ = require('lodash');
-
-  dependencyList = require('./dependency_list.coffee');
-
-  module.exports = {
-    requireAndInit: function(dependency) {
-      return this[dependency.key] = dependency.instance.init(this);
-    },
-    newInstance: function() {
-      var toInitialize,
-        _this = this;
-      toInitialize = {
-        dependencies: dependencyList(),
-        "for": function(typeToInitWith) {
-          return this.dependencies.filter(function(dependency) {
-            if ((dependency.initializeWith != null)) {
-              return _.contains(dependency.initializeWith, typeToInitWith);
-            }
-          });
-        }
-      };
-      this._ = _;
-      this.$ = require('jquery');
-      _.forEach(toInitialize.dependencies, function(dependency) {
-        return _this[dependency.key] = dependency.instance;
-      });
-      _.forEach(toInitialize["for"]('app'), this.requireAndInit.bind(this));
-      return this.newAreaInstance = function(area) {
-        var requireAndInit;
-        area.app = _.clone(this);
-        requireAndInit = function(dependency) {
-          return area.app[dependency.key] = area.app[dependency.key].init(area);
-        };
-        return _.forEach(toInitialize["for"]('area'), requireAndInit);
-      };
-    }
-  };
-
-}).call(this);
-
-
-},{"./dependency_list.coffee":18,"lodash":26,"jquery":27}],21:[function(require,module,exports){
+},{"../dom/slider.coffee":25}],21:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -806,7 +854,7 @@
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":15,"lodash":26,"jquery":27}],26:[function(require,module,exports){
+},{"./color_theme.coffee":1,"./dom/draw.coffee":15,"lodash":26,"jquery":27}],26:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7594,7 +7642,198 @@
 }.call(this));
 
 })(window)
-},{}],27:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
+(function() {
+  var dependencyList, _;
+
+  _ = require('lodash');
+
+  dependencyList = require('./dependency_list.coffee');
+
+  module.exports = {
+    requireAndInit: function(dependency) {
+      return this[dependency.key] = dependency.instance.init(this);
+    },
+    newInstance: function() {
+      var toInitialize,
+        _this = this;
+      toInitialize = {
+        dependencies: dependencyList(),
+        "for": function(typeToInitWith) {
+          return this.dependencies.filter(function(dependency) {
+            if ((dependency.initializeWith != null)) {
+              return _.contains(dependency.initializeWith, typeToInitWith);
+            }
+          });
+        }
+      };
+      this._ = _;
+      this.$ = require('jquery');
+      _.forEach(toInitialize.dependencies, function(dependency) {
+        return _this[dependency.key] = dependency.instance;
+      });
+      _.forEach(toInitialize["for"]('app'), this.requireAndInit.bind(this));
+      return this.newAreaInstance = function(area) {
+        var requireAndInit;
+        area.app = _.clone(this);
+        requireAndInit = function(dependency) {
+          return area.app[dependency.key] = area.app[dependency.key].init(area);
+        };
+        return _.forEach(toInitialize["for"]('area'), requireAndInit);
+      };
+    }
+  };
+
+}).call(this);
+
+
+},{"./dependency_list.coffee":18,"lodash":26,"jquery":27}],25:[function(require,module,exports){
+(function() {
+  var draw, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  exports.init = function(params, callbacks, overrides) {
+    var cb, element, percision;
+    if (params.parent.state.visibleGuiControls[params.key]) {
+      cb = function(old) {
+        return callbacks[params.key]({
+          area: params.parent,
+          old: old,
+          key: params.key
+        });
+      };
+      element = draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
+      element.css('width', params.parent.face.width());
+      percision = 100000;
+      element.slider({
+        min: 0,
+        max: overrides ? percision * overrides.max : percision,
+        change: function(event, ui) {
+          var old;
+          old = params.parent.state[params.key];
+          params.parent.state[params.key] = ui.value / percision;
+          return cb(old);
+        }
+      });
+      element.slider('option', 'value', params.parent.state[params.key] * percision);
+      return element;
+    }
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":15,"jquery-ui":28}],15:[function(require,module,exports){
+(function() {
+  var $, ui;
+
+  $ = require('jquery');
+
+  ui = require('jquery-ui');
+
+  module.exports = function(child, parent) {
+    var c;
+    if (parent == null) {
+      parent = $('.sound-paint');
+    }
+    c = $(child);
+    parent.append(c);
+    return c;
+  };
+
+  if (typeof window !== 'undefined') {
+    window.jq = $;
+  }
+
+}).call(this);
+
+
+},{"jquery-ui":28,"jquery":27}],23:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":15,"./slider.coffee":25,"jquery-ui":28}],17:[function(require,module,exports){
+(function() {
+  var _;
+
+  _ = require('lodash');
+
+  exports.isInBox = function(pos, box) {
+    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
+      return exports.amountInBox(pos, box);
+    }
+  };
+
+  exports.snapToGrid = function(pos, gridCellSize) {
+    return {
+      x: gridCellSize * Math.round(pos.x / gridCellSize),
+      y: gridCellSize * Math.round(pos.y / gridCellSize)
+    };
+  };
+
+  exports.snapToGridFromEquation = function(pos, equation) {
+    var getClosest, oneOver, trunc;
+    getClosest = function(n, closest) {
+      if (closest == null) {
+        closest = 0;
+      }
+      if (equation(n) < pos) {
+        return getClosest(n + 1, equation(n));
+      } else {
+        return [n, closest];
+      }
+    };
+    trunc = getClosest(0);
+    oneOver = equation(trunc[0]);
+    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
+      return oneOver;
+    } else {
+      return trunc[1];
+    }
+  };
+
+  exports.isIn = function(arr, pos) {
+    return _.some(arr, function(item) {
+      return _.isEqual(pos, item);
+    });
+  };
+
+  exports.amountInBox = function(pos, box) {
+    var inboxx, inboxy;
+    inboxx = pos.x - box.left;
+    inboxy = pos.y - box.top;
+    return {
+      x: inboxx / (box.right - box.left),
+      y: 1 - (inboxy / (box.bottom - box.top))
+    };
+  };
+
+  window.positionLib = exports;
+
+}).call(this);
+
+
+},{"lodash":26}],27:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16708,153 +16947,7 @@ return jQuery;
 }));
 
 })()
-},{}],15:[function(require,module,exports){
-(function() {
-  var $, ui;
-
-  $ = require('jquery');
-
-  ui = require('jquery-ui');
-
-  module.exports = function(child, parent) {
-    var c;
-    if (parent == null) {
-      parent = $('.sound-paint');
-    }
-    c = $(child);
-    parent.append(c);
-    return c;
-  };
-
-  if (typeof window !== 'undefined') {
-    window.jq = $;
-  }
-
-}).call(this);
-
-
-},{"jquery":27,"jquery-ui":28}],25:[function(require,module,exports){
-(function() {
-  var draw, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  exports.init = function(params, callbacks, overrides) {
-    var cb, element, percision;
-    if (params.parent.state.visibleGuiControls[params.key]) {
-      cb = function(old) {
-        return callbacks[params.key]({
-          area: params.parent,
-          old: old,
-          key: params.key
-        });
-      };
-      element = draw("<div id=\"" + params.key + "\"></div>", params.parent.container);
-      element.css('width', params.parent.face.width());
-      percision = 100000;
-      element.slider({
-        min: 0,
-        max: overrides ? percision * overrides.max : percision,
-        change: function(event, ui) {
-          var old;
-          old = params.parent.state[params.key];
-          params.parent.state[params.key] = ui.value / percision;
-          return cb(old);
-        }
-      });
-      element.slider('option', 'value', params.parent.state[params.key] * percision);
-      return element;
-    }
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":15,"jquery-ui":28}],17:[function(require,module,exports){
-(function() {
-  var _;
-
-  _ = require('lodash');
-
-  exports.isInBox = function(pos, box) {
-    if ((pos.x >= box.left) && (pos.x <= box.right) && (pos.y >= box.top) && (pos.y <= box.bottom)) {
-      return exports.amountInBox(pos, box);
-    }
-  };
-
-  exports.snapToGrid = function(pos, gridCellSize) {
-    return {
-      x: gridCellSize * Math.round(pos.x / gridCellSize),
-      y: gridCellSize * Math.round(pos.y / gridCellSize)
-    };
-  };
-
-  exports.snapToGridFromEquation = function(pos, equation) {
-    var getClosest, oneOver, trunc;
-    getClosest = function(n, closest) {
-      if (closest == null) {
-        closest = 0;
-      }
-      if (equation(n) < pos) {
-        return getClosest(n + 1, equation(n));
-      } else {
-        return [n, closest];
-      }
-    };
-    trunc = getClosest(0);
-    oneOver = equation(trunc[0]);
-    if (oneOver < 1 && Math.abs(oneOver - pos) < Math.abs(trunc[1] - pos)) {
-      return oneOver;
-    } else {
-      return trunc[1];
-    }
-  };
-
-  exports.isIn = function(arr, pos) {
-    return _.some(arr, function(item) {
-      return _.isEqual(pos, item);
-    });
-  };
-
-  exports.amountInBox = function(pos, box) {
-    var inboxx, inboxy;
-    inboxx = pos.x - box.left;
-    inboxy = pos.y - box.top;
-    return {
-      x: inboxx / (box.right - box.left),
-      y: 1 - (inboxy / (box.bottom - box.top))
-    };
-  };
-
-  window.positionLib = exports;
-
-}).call(this);
-
-
-},{"lodash":26}],23:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":15,"./slider.coffee":25,"jquery-ui":28}],28:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31862,5 +31955,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":27}]},{},[14,16,1,2,3,18,24,15,4,5,25,23,6,20,7,21,8,17,19,9,10,22,11,12,13])
+},{"jquery":27}]},{},[14,16,3,1,2,18,24,15,4,5,25,23,6,20,7,21,8,17,19,9,10,22,11,12,13])
 ;
