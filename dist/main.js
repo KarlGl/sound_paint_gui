@@ -16684,7 +16684,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery-ui":27,"jquery":26}],22:[function(require,module,exports){
+},{"jquery":26,"jquery-ui":27}],22:[function(require,module,exports){
 (function() {
   var draw, ui;
 

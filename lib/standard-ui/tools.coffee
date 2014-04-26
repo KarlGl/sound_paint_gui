@@ -6,6 +6,7 @@ exports.init = (app)->
   init: (area)->
     #
     # save all tools in state, to corresponding tools on the direct area object.
+
     area.tools = []
 
     area.toolCt = app.draw("<div class=\"toolCt\"></div>", area.container)

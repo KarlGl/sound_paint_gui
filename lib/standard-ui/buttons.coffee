@@ -30,7 +30,9 @@ exports.init = (area)->
 
   btnHash = {}
 
+  # 
   # Use this method to add each toggle button.
+  #
   addStandardToggle = (params)->
     btnHash[params.name] = (cb)->
       btnLib.init
