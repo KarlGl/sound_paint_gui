@@ -1,14 +1,21 @@
 # 
-# A block in the area.
-# A block is a single drawn dot.
+# Methods for the unit in an area. 
+# Related to waveforms and drawing.
 #
 
 exports.init = (area)->
-    init: (block)->
-      area.context.fillStyle = 'black'#block.waveform.color
-      area.context.fillRect(
-        block.x * area.state.len
-        (1 - block.y) * area.state.len
-        area.state.blockSize * area.state.len
-        area.state.blockSize * area.state.len
-      )
+
+  currentWaveform: ()->
+    name = area.state.optionActive
+    area.app._.find(area.state.waveforms, (waveform)->
+      waveform.name is name
+    )
+
+  init: (block)->
+    area.context.fillStyle = this.currentWaveform().color
+    area.context.fillRect(
+      block.x * area.state.len
+      (1 - block.y) * area.state.len
+      area.state.blockSize * area.state.len
+      area.state.blockSize * area.state.len
+    )

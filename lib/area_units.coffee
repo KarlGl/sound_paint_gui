@@ -38,6 +38,8 @@ exports.init = (area)->
                   newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get)
 
               # next time we play, this new unit will be there if created. 
+
+              newUnitPos.waveName = area.state.optionActive
               this.addUnitCanditate(newUnitPos)
 
         area.mouseCallbacks = {

@@ -3,8 +3,8 @@ module.exports = {
     blockSize: 0.02,
     playSlider: 0.09,
     bpm: 6,
-    isPlaying: false,
-    isLooping: true,
+    isPlaying: true,
+    isLooping: false,
 
     visibleGuiControls: {
       isPlaying: true,
@@ -25,9 +25,16 @@ module.exports = {
     gridIsShow_y: true,
     
     units: [
-      # {x: 0.25, y: 0.1},
-      # {x: 0.5, y: 0.2},
-      # {x: 0.75, y: 0.1},
+      {
+      "x": 0.1,
+      "y": 0.07749843267518128,
+      "waveName": "sin"
+      },
+      {
+        "x": 0.14,
+        "y": 0.10154068089173789,
+        "waveName": "sin"
+      }
     ],
     tools: [
       {name: 'pen'} 

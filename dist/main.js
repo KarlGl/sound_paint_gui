@@ -2,8 +2,15 @@
 (function() {
   exports.init = function(area) {
     return {
+      currentWaveform: function() {
+        var name;
+        name = area.state.optionActive;
+        return area.app._.find(area.state.waveforms, function(waveform) {
+          return waveform.name === name;
+        });
+      },
       init: function(block) {
-        area.context.fillStyle = 'black';
+        area.context.fillStyle = this.currentWaveform().color;
         return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
       }
     };
@@ -33,8 +40,8 @@
     blockSize: 0.02,
     playSlider: 0.09,
     bpm: 6,
-    isPlaying: false,
-    isLooping: true,
+    isPlaying: true,
+    isLooping: false,
     visibleGuiControls: {
       isPlaying: true,
       isLooping: true,
@@ -51,7 +58,17 @@
     gridIsShow_x: false,
     gridIsSnap_y: true,
     gridIsShow_y: true,
-    units: [],
+    units: [
+      {
+        "x": 0.1,
+        "y": 0.07749843267518128,
+        "waveName": "sin"
+      }, {
+        "x": 0.14,
+        "y": 0.10154068089173789,
+        "waveName": "sin"
+      }
+    ],
     tools: [
       {
         name: 'pen'
@@ -540,12 +557,14 @@
       return true;
     };
     addPoint = function() {
-      var point;
+      var point, _ref;
       point = {
         x: mouseX / lens.canvas.w,
         y: mouseY / lens.canvas.h
       };
-      area.currentWaveformPoints().push(point);
+      if ((_ref = area.app.block.currentWaveform()) != null) {
+        _ref.points.push(point);
+      }
       area.app.saveLoad.renderState();
       return drawPoint(point);
     };
@@ -553,16 +572,10 @@
       return area.waveformEditor.context.fillRect((point.x * lens.canvas.w) - (lens.point.w / 2), (point.y * lens.canvas.h) - (lens.point.h / 2), lens.point.w, lens.point.h);
     };
     drawExistingPoints = function() {
-      return area.currentWaveformPoints().forEach(function(point) {
+      var _ref;
+      return (_ref = area.app.block.currentWaveform()) != null ? _ref.points.forEach(function(point) {
         return drawPoint(point);
-      });
-    };
-    area.currentWaveformPoints = function(point) {
-      var name, _ref;
-      name = this.state.optionActive;
-      return (_ref = area.app._.find(this.state.waveforms, function(waveform) {
-        return waveform.name === name;
-      })) != null ? _ref.points : void 0;
+      }) : void 0;
     };
     area.waveformEditor = {};
     area.waveformEditor.face = canvasDiv = area.app.draw("<canvas class=\"waveform-editor\"></canvas><br/>", area.container).attr('width', area.state.len).attr('height', area.state.len);
@@ -697,6 +710,7 @@
                   return newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
                 }
               });
+              newUnitPos.waveName = area.state.optionActive;
               return _this.addUnitCanditate(newUnitPos);
             }
           }
@@ -741,7 +755,7 @@
 }).call(this);
 
 
-},{"./sound_paint_gui.coffee":20,"./dom/draw.coffee":16,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./positions/grid_equations.coffee":8,"./dom/toggle_btn.coffee":6,"./block.coffee":1,"./area_units.coffee":17,"./area_draw.coffee":15,"./standard-ui/save_load.coffee":12,"./standard-ui/resizer.coffee":11,"./link.coffee":21,"./standard-ui/exclusive_button.coffee":10,"./standard-ui/tools.coffee":13,"./standard-ui/waveform_editor.coffee":14,"./mouse_tracker.coffee":22}],21:[function(require,module,exports){
+},{"./sound_paint_gui.coffee":20,"./dom/draw.coffee":16,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./positions/grid_equations.coffee":8,"./dom/toggle_btn.coffee":6,"./block.coffee":1,"./area_units.coffee":17,"./area_draw.coffee":15,"./standard-ui/save_load.coffee":12,"./standard-ui/resizer.coffee":11,"./standard-ui/exclusive_button.coffee":10,"./link.coffee":21,"./standard-ui/tools.coffee":13,"./standard-ui/waveform_editor.coffee":14,"./mouse_tracker.coffee":22}],21:[function(require,module,exports){
 (function() {
   var buttons, playSlider, sliderWithMaxAndMin;
 
@@ -16881,7 +16895,28 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":28,"jquery-ui":29}],26:[function(require,module,exports){
+},{"jquery":28,"jquery-ui":29}],24:[function(require,module,exports){
+(function() {
+  var draw, slider, ui;
+
+  ui = require('jquery-ui');
+
+  draw = require('./draw.coffee');
+
+  slider = require('./slider.coffee');
+
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
+  };
+
+}).call(this);
+
+
+},{"./draw.coffee":16,"./slider.coffee":26,"jquery-ui":29}],26:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16981,28 +17016,7 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":27}],24:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":16,"./slider.coffee":26,"jquery-ui":29}],29:[function(require,module,exports){
+},{"lodash":27}],29:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
