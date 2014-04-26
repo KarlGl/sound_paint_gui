@@ -1,7 +1,5 @@
 # The btn to play and pause
 
-btnLib = require '../dom/btn.coffee'
-
 exports.buttonList = [
   name: 'isPlaying'
   inner: 'advance'
@@ -35,16 +33,15 @@ exports.init = (area)->
   #
   addStandardToggle = (params)->
     btnHash[params.name] = (cb)->
-      btnLib.init
+      area.app.toggleBtn.init
         id: "#{params.name}-btn"
         inner: "#{params.inner || params.name}"
-        parent: area
         key: params.name
         cb: cb
 
   exports.buttonList.forEach (args)->
     # Only show if visible in the GUI is set.
     if area.state.visibleGuiControls[args.name]
-      addStandardToggle args 
+      addStandardToggle args
 
   btnHash

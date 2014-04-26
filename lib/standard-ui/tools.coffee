@@ -2,16 +2,14 @@
 # The tools such as pen, eraser, etc.
 #
 
-exports.init = (app)->
-  init: (area)->
+exports.init = (area)->
     #
     # save all tools in state, to corresponding tools on the direct area object.
-
     area.tools = []
 
-    area.toolCt = app.draw("<div class=\"toolCt\"></div>", area.container)
-      .css('border', "#{app.colors.active} 1px solid")
-      .css('background-color', app.colors.barelyThere)
+    area.toolCt = area.app.draw("<div class=\"toolCt\"></div>", area.container)
+      .css('border', "#{area.app.colors.active} 1px solid")
+      .css('background-color', area.app.colors.barelyThere)
 
     area.state.tools.forEach (toolConfig)->
       tool = area.app.exclusiveButton.new(
@@ -30,9 +28,9 @@ exports.init = (app)->
       else
         tool.exclusiveOptions = []
 
-    area.toolExclusiveOptionsCt = app.draw("<div class=\"waveCt\"></div>", area.toolCt)
-      .css('border', "#{app.colors.active} 1px solid")
-      .css('background-color', app.colors.inactive)
+    area.toolExclusiveOptionsCt = area.app.draw("<div class=\"waveCt\"></div>", area.toolCt)
+      .css('border', "#{area.app.colors.active} 1px solid")
+      .css('background-color', area.app.colors.inactive)
 
     area.tools.forEach (tool)->
       tool.exclusiveOptionInstances = []
@@ -41,7 +39,7 @@ exports.init = (app)->
           name: optionConfig.name, 
           key: 'option',
           cssActive: ->
-            this.element.css("border", "#{app.colors.active} 6px solid")
+            this.element.css("border", "#{area.app.colors.active} 6px solid")
           cssInactive: ->
             this.element.css("border", "none")
           container: area.toolExclusiveOptionsCt
@@ -50,5 +48,7 @@ exports.init = (app)->
         option.element
           .css('background-color', optionConfig.color)
           .css('color', 'white')
+
+    area.tools
 
 

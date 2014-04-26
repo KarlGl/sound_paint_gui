@@ -3,8 +3,7 @@
 # A block is a single drawn dot.
 #
 
-exports.init = (app)->
-  init: (area)->
+exports.init = (area)->
     init: (block)->
       area.context.fillStyle = 'black'#block.waveform.color
       area.context.fillRect(

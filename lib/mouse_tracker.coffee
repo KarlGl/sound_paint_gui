@@ -10,8 +10,7 @@ _ = require 'lodash'
 # for event listening
 $ = require 'jquery'
 
-exports.init = (app)->
-  init: (area)->
+exports.init = (area)->
     callbacks = area.mouseCallbacks
     size = 10
     down = false

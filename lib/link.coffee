@@ -10,44 +10,43 @@ sliderWithMaxAndMin = require './dom/slider_with_max.coffee'
 exports.getGlobalCallbacks = ->
   window.callbacks
 
-exports.init = (app)->
-  init: (area)->
-    callbacks = exports.getGlobalCallbacks()
+exports.init = (area)->
+  callbacks = exports.getGlobalCallbacks()
 
-    btnHash = buttons.init(area)
+  btnHash = buttons.init(area)
 
-    # Draw state input box.
-    stateInput = area.app.saveLoad.init(
-        key: 'stateInput',
-        callbacks: callbacks
-    )
+  # Draw state input box.
+  stateInput = area.app.saveLoad.init(
+      key: 'stateInput',
+      callbacks: callbacks
+  )
 
-    # SLIDERS
-    playSliderEl = playSlider.init(area, callbacks)
-    speedSliderEl = sliderWithMaxAndMin.init(
-        parent: area,
-        key: 'bpm'
-      , callbacks)
+  # SLIDERS
+  playSliderEl = playSlider.init(area, callbacks)
+  speedSliderEl = sliderWithMaxAndMin.init(
+      parent: area,
+      key: 'bpm'
+    , callbacks)
 
 
-    initButtonToSendMessage = (name)->
-      btnHash[name] (old)->
-        callbacks[name](
-          area: area
-          old: old
-          key: name
-        )
-
-    app._.keys(btnHash).forEach (key)->
-      initButtonToSendMessage key
-
-    # Make sure this is called last.
-    # After the initialization code, there's a call to resize to max possible size 
-    if (area.state.visibleGuiControls.len)
-      resizerEl = area.app.resizer.init(
-        key: 'areaResize'
-        callbacks: callbacks
+  initButtonToSendMessage = (name)->
+    btnHash[name] (old)->
+      callbacks[name](
+        area: area
+        old: old
+        key: name
       )
-      resizerEl
-    else
-      area
+
+  area.app._.keys(btnHash).forEach (key)->
+    initButtonToSendMessage key
+
+  # Make sure this is called last.
+  # After the initialization code, there's a call to resize to max possible size 
+  if (area.state.visibleGuiControls.len)
+    resizerEl = area.app.resizer.init(
+      key: 'areaResize'
+      callbacks: callbacks
+    )
+    resizerEl
+  else
+    area

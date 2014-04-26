@@ -1,14 +1,10 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  exports.init = function(app) {
+  exports.init = function(area) {
     return {
-      init: function(area) {
-        return {
-          init: function(block) {
-            area.context.fillStyle = 'black';
-            return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
-          }
-        };
+      init: function(block) {
+        area.context.fillStyle = 'black';
+        return area.context.fillRect(block.x * area.state.len, (1 - block.y) * area.state.len, area.state.blockSize * area.state.len, area.state.blockSize * area.state.len);
       }
     };
   };
@@ -110,12 +106,51 @@
 
 },{}],6:[function(require,module,exports){
 (function() {
+  var size;
 
+  size = 30;
+
+  exports.init = function(area) {
+    return {
+      init: function(params) {
+        var btn, set;
+        btn = area.app.draw("<div id=\"" + params.id + "\">" + params.inner + "</div>", area.container);
+        btn.css('height', size);
+        btn.addClass('btn');
+        set = function(v) {
+          var old;
+          if (area.state[params.key] !== v) {
+            old = area.state[params.key];
+            area.state[params.key] = v;
+            params.cb(old);
+          }
+          if (area.state[params.key]) {
+            btn.addClass('btn-on');
+            return btn.css('background-color', area.app.colors.active);
+          } else {
+            btn.addClass('btn-off');
+            return btn.css('background-color', area.app.colors.inactive);
+          }
+        };
+        set(area.state[params.key]);
+        return btn.click(function() {
+          return set(!area.state[params.key]);
+        });
+      }
+    };
+  };
 
 }).call(this);
 
 
 },{}],7:[function(require,module,exports){
+(function() {
+
+
+}).call(this);
+
+
+},{}],8:[function(require,module,exports){
 (function() {
   exports.init = function(app) {
     return function() {
@@ -139,399 +174,8 @@
 }).call(this);
 
 
-},{}],8:[function(require,module,exports){
-(function() {
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        return {
-          "new": function(params) {
-            var tool;
-            tool = {
-              name: params.name,
-              element: area.app.draw("<div class=\"btn tool " + params.name + "\">" + params.name + "</div>", params.container),
-              set: function(isActive) {
-                if (isActive) {
-                  this.element.removeClass('btn-off');
-                  this.element.addClass('btn-on');
-                  area.state["" + params.key + "Active"] = this.name;
-                  area.app.saveLoad.renderState();
-                  return params.cssActive.call(this);
-                } else {
-                  this.element.removeClass('btn-on');
-                  this.element.addClass('btn-off');
-                  return params.cssInactive.call(this);
-                }
-              },
-              pickADefault: function() {
-                var name;
-                if ((name = area.state["" + params.key + "Active"])) {
-                  if (this.name === name) {
-                    return this.set(true);
-                  }
-                }
-              }
-            };
-            tool.element.click(function() {
-              params.coll.forEach(function(tool) {
-                return tool.set(false);
-              });
-              return tool.set(true);
-            });
-            tool.pickADefault();
-            params.coll.push(tool);
-            return tool;
-          }
-        };
-      }
-    };
-  };
-
-}).call(this);
-
-
 },{}],9:[function(require,module,exports){
 (function() {
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        return {
-          dealWithChange: function(val) {
-            var old;
-            old = null;
-            console.log("Reloading from state box");
-            area.state = area.app.json.parse(val);
-            area.stateTextArea.params.cb(old);
-            return area.restartGUI();
-          },
-          renderState: function() {
-            return area.stateTextArea.val(area.app.json.stringify(area.state));
-          },
-          init: function(params) {
-            var element,
-              _this = this;
-            if (area.state.visibleGuiControls[params.key]) {
-              element = area.app.draw("<textarea class=\"" + params.key + "\">", area.container);
-              area.stateTextArea = element;
-              this.renderState();
-              element.params = {
-                parent: area,
-                cb: function(old) {
-                  return params.callbacks[params.key]({
-                    area: area,
-                    old: old,
-                    key: params.key
-                  });
-                }
-              };
-              element.css('width', area.face.width());
-              element.css('height', 130);
-              element.change(function(event) {
-                return _this.dealWithChange(event.target.value);
-              });
-              return element;
-            }
-          }
-        };
-      }
-    };
-  };
-
-}).call(this);
-
-
-},{}],10:[function(require,module,exports){
-(function() {
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        area.tools = [];
-        area.toolCt = app.draw("<div class=\"toolCt\"></div>", area.container).css('border', "" + app.colors.active + " 1px solid").css('background-color', app.colors.barelyThere);
-        area.state.tools.forEach(function(toolConfig) {
-          var tool;
-          tool = area.app.exclusiveButton["new"]({
-            name: toolConfig.name,
-            key: 'tool',
-            cssActive: function() {
-              return this.element.css('background-color', area.app.colors.active);
-            },
-            cssInactive: function() {
-              return this.element.css('background-color', area.app.colors.inactive);
-            },
-            container: area.toolCt,
-            coll: area.tools
-          });
-          if (tool.name === 'pen') {
-            return tool.exclusiveOptions = area.state.waveforms;
-          } else {
-            return tool.exclusiveOptions = [];
-          }
-        });
-        area.toolExclusiveOptionsCt = app.draw("<div class=\"waveCt\"></div>", area.toolCt).css('border', "" + app.colors.active + " 1px solid").css('background-color', app.colors.inactive);
-        return area.tools.forEach(function(tool) {
-          tool.exclusiveOptionInstances = [];
-          return tool.exclusiveOptions.forEach(function(optionConfig) {
-            var option;
-            option = area.app.exclusiveButton["new"]({
-              name: optionConfig.name,
-              key: 'option',
-              cssActive: function() {
-                return this.element.css("border", "" + app.colors.active + " 6px solid");
-              },
-              cssInactive: function() {
-                return this.element.css("border", "none");
-              },
-              container: area.toolExclusiveOptionsCt,
-              coll: tool.exclusiveOptionInstances
-            });
-            return option.element.css('background-color', optionConfig.color).css('color', 'white');
-          });
-        });
-      }
-    };
-  };
-
-}).call(this);
-
-
-},{}],11:[function(require,module,exports){
-(function() {
-  var draw;
-
-  draw = require('./dom/draw.coffee');
-
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        var out,
-          _this = this;
-        out = {
-          drawGrids: function() {
-            var fillFuncs;
-            fillFuncs = {
-              x: function(point) {
-                return area.context.fillRect(point, 0, 1, area.state.len);
-              },
-              y: function(point) {
-                return area.context.fillRect(0, area.state.len - point, area.state.len, 1);
-              }
-            };
-            return ['x', 'y'].forEach(function(axis) {
-              var fill, hash;
-              hash = area.gridEquations[axis];
-              if (area.state['gridIsShow_' + axis]) {
-                area.context.fillStyle = area.app.colors.inactive;
-                fill = function(n) {
-                  var pos;
-                  if ((pos = hash.get(n)) < 1) {
-                    fillFuncs[axis](pos * area.state.len);
-                    return fill(n + 1);
-                  }
-                };
-                return fill(0);
-              }
-            });
-          },
-          setSize: function() {
-            area.face.attr('width', area.state.len);
-            return area.face.attr('height', area.state.len);
-          },
-          drawContainer: function() {
-            if ((area.container != null)) {
-              area.container.remove();
-            }
-            return area.container = app.draw("<div class=\"area-ct\"></div>");
-          },
-          drawPlayIndicator: function() {
-            area.playIndicator = {
-              face: draw('<div class="play-indicator"></div>', area.container),
-              setX: function(newVal) {
-                return this.face.css('left', (newVal * area.state.len) + pos.left).css('top', pos.top);
-              }
-            };
-            return area.playIndicator.face.css('height', area.state.len).css('background-color', area.app.colors.active);
-          },
-          drawFace: function() {
-            area.face = draw('<canvas class="area"></canvas><br/>', area.container);
-            return area.context = area.face[0].getContext("2d");
-          },
-          drawUnits: function() {
-            return area.state.units.forEach(function(unit) {
-              return area.app.block.init(unit);
-            });
-          },
-          attachPositionAttributes: function() {
-            var pos;
-            pos = area.face.position();
-            return area.box = {
-              top: pos.top,
-              left: pos.left,
-              right: pos.left + area.face.width(),
-              bottom: pos.top + area.face.height()
-            };
-          }
-        };
-        return ['drawContainer', 'drawFace', 'setSize', 'drawUnits', 'drawGrids', 'attachPositionAttributes'].forEach(function(k) {
-          return out[k]();
-        });
-      }
-    };
-  };
-
-}).call(this);
-
-
-},{"./dom/draw.coffee":12}],13:[function(require,module,exports){
-(function() {
-  var positionLib;
-
-  positionLib = require('./positions/positions.coffee');
-
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        var out;
-        out = {
-          addUnitCanditate: function(unit) {
-            if (!positionLib.isIn(area.state.units, unit) && !(unit.x === 1) && !(unit.y === 0)) {
-              console.log("New Unit", unit);
-              area.state.units.push(unit);
-              callbacks['units']({
-                area: area
-              });
-              return area.app.block.init(unit);
-            }
-          },
-          mouseInit: function() {
-            var potentiallyMakeNewBlock,
-              _this = this;
-            potentiallyMakeNewBlock = function(mouseState) {
-              var newUnitPos, snappedPoint;
-              if (mouseState["new"].down) {
-                snappedPoint = positionLib.snapToGrid(mouseState["new"].pos, area.state.blockSize * area.state.len);
-                if (newUnitPos = positionLib.isInBox(snappedPoint, area.box)) {
-                  ['x', 'y'].forEach(function(axis) {
-                    var gridHash;
-                    gridHash = area.gridEquations[axis];
-                    if (area.state['gridIsSnap_' + axis]) {
-                      return newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
-                    }
-                  });
-                  return _this.addUnitCanditate(newUnitPos);
-                }
-              }
-            };
-            area.mouseCallbacks = {
-              mousemove: function(mouseState) {
-                return potentiallyMakeNewBlock(mouseState);
-              },
-              mousedown: function(mouseState) {
-                return potentiallyMakeNewBlock(mouseState);
-              },
-              mouseup: function(mouseState) {}
-            };
-            return area;
-          }
-        };
-        return out.mouseInit();
-      }
-    };
-  };
-
-}).call(this);
-
-
-},{"./positions/positions.coffee":14}],15:[function(require,module,exports){
-(function() {
-  var buttons, playSlider, sliderWithMaxAndMin;
-
-  playSlider = require('./standard-ui/play_slider.coffee');
-
-  buttons = require('./standard-ui/buttons.coffee');
-
-  sliderWithMaxAndMin = require('./dom/slider_with_max.coffee');
-
-  exports.getGlobalCallbacks = function() {
-    return window.callbacks;
-  };
-
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        var btnHash, callbacks, initButtonToSendMessage, playSliderEl, resizerEl, speedSliderEl, stateInput;
-        callbacks = exports.getGlobalCallbacks();
-        btnHash = buttons.init(area);
-        stateInput = area.app.saveLoad.init({
-          key: 'stateInput',
-          callbacks: callbacks
-        });
-        playSliderEl = playSlider.init(area, callbacks);
-        speedSliderEl = sliderWithMaxAndMin.init({
-          parent: area,
-          key: 'bpm'
-        }, callbacks);
-        initButtonToSendMessage = function(name) {
-          return btnHash[name](function(old) {
-            return callbacks[name]({
-              area: area,
-              old: old,
-              key: name
-            });
-          });
-        };
-        app._.keys(btnHash).forEach(function(key) {
-          return initButtonToSendMessage(key);
-        });
-        if (area.state.visibleGuiControls.len) {
-          resizerEl = area.app.resizer.init({
-            key: 'areaResize',
-            callbacks: callbacks
-          });
-          return resizerEl;
-        } else {
-          return area;
-        }
-      }
-    };
-  };
-
-}).call(this);
-
-
-},{"./standard-ui/play_slider.coffee":16,"./standard-ui/buttons.coffee":17,"./dom/slider_with_max.coffee":18}],19:[function(require,module,exports){
-(function() {
-  var app;
-
-  app = require('./app.coffee');
-
-  exports.init = function(area) {
-    window.globalArea = area;
-    area.restartGUI = function() {
-      return exports.init(area);
-    };
-    return app.newInstance(area);
-  };
-
-  exports.initProgram = function() {
-    app.newInstance();
-    return exports.init({
-      rootElement: app.rootElement.draw(),
-      gridEquations: app.gridEquations(),
-      state: app.defaultState
-    });
-  };
-
-  setTimeout(exports.initProgram, 0);
-
-}).call(this);
-
-
-},{"./app.coffee":20}],17:[function(require,module,exports){
-(function() {
-  var btnLib;
-
-  btnLib = require('../dom/btn.coffee');
-
   exports.buttonList = [
     {
       name: 'isPlaying',
@@ -559,10 +203,9 @@
     btnHash = {};
     addStandardToggle = function(params) {
       return btnHash[params.name] = function(cb) {
-        return btnLib.init({
+        return area.app.toggleBtn.init({
           id: "" + params.name + "-btn",
           inner: "" + (params.inner || params.name),
-          parent: area,
           key: params.name,
           cb: cb
         });
@@ -579,7 +222,460 @@
 }).call(this);
 
 
-},{"../dom/btn.coffee":21}],16:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
+(function() {
+  exports.init = function(area) {
+    return {
+      "new": function(params) {
+        var tool;
+        tool = {
+          name: params.name,
+          element: area.app.draw("<div class=\"btn tool " + params.name + "\">" + params.name + "</div>", params.container),
+          set: function(isActive) {
+            if (isActive) {
+              this.element.removeClass('btn-off');
+              this.element.addClass('btn-on');
+              area.state["" + params.key + "Active"] = this.name;
+              area.app.saveLoad.renderState();
+              return params.cssActive.call(this);
+            } else {
+              this.element.removeClass('btn-on');
+              this.element.addClass('btn-off');
+              return params.cssInactive.call(this);
+            }
+          },
+          pickADefault: function() {
+            var name;
+            if ((name = area.state["" + params.key + "Active"])) {
+              if (this.name === name) {
+                return this.set(true);
+              }
+            }
+          }
+        };
+        tool.element.click(function() {
+          params.coll.forEach(function(tool) {
+            return tool.set(false);
+          });
+          return tool.set(true);
+        });
+        tool.pickADefault();
+        params.coll.push(tool);
+        return tool;
+      }
+    };
+  };
+
+}).call(this);
+
+
+},{}],11:[function(require,module,exports){
+(function() {
+  var BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE;
+
+  BOTTOM_CONTROL_SIZE = 310;
+
+  RIGHT_CONTROL_SIZE = 20;
+
+  exports.init = function(area) {
+    var out;
+    return out = {
+      setToMaximum: function() {
+        var largest, root;
+        if (area.state.visibleGuiControls.len) {
+          largest = Math.min((root = area.rootElement).width() - RIGHT_CONTROL_SIZE, root.height() - BOTTOM_CONTROL_SIZE);
+          if (area.state['len'] !== largest) {
+            area.resizerElement.val(largest);
+            this.dealWithChange(largest);
+          }
+        }
+        return this;
+      },
+      dealWithChange: function(val) {
+        var old;
+        old = area.state['len'];
+        area.state['len'] = parseInt(val);
+        area.resizerElement.params.cb(old);
+        return area.restartGUI();
+      },
+      init: function(params) {
+        var element, elementMaximize,
+          _this = this;
+        element = area.app.draw("<input type=\"number\" class=\"resize\">", area.container);
+        area.resizerElement = element;
+        elementMaximize = area.app.draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", area.container);
+        element.val(area.state['len']);
+        element.css('width', 46);
+        element.params = {
+          parent: area,
+          cb: function(old) {
+            return params.callbacks[params.key]({
+              area: area,
+              old: old,
+              key: params.key
+            });
+          }
+        };
+        elementMaximize.click(function() {
+          return _this.setToMaximum();
+        });
+        element.change(function(event) {
+          return _this.dealWithChange(event.target.value);
+        });
+        return element;
+      }
+    };
+  };
+
+}).call(this);
+
+
+},{}],12:[function(require,module,exports){
+(function() {
+  exports.init = function(area) {
+    return {
+      dealWithChange: function(val) {
+        var old;
+        old = null;
+        console.log("Reloading from state box");
+        area.state = area.app.json.parse(val);
+        area.stateTextArea.params.cb(old);
+        return area.restartGUI();
+      },
+      renderState: function() {
+        return area.stateTextArea.val(area.app.json.stringify(area.state));
+      },
+      init: function(params) {
+        var element,
+          _this = this;
+        if (area.state.visibleGuiControls[params.key]) {
+          element = area.app.draw("<textarea class=\"" + params.key + "\">", area.container);
+          area.stateTextArea = element;
+          this.renderState();
+          element.params = {
+            parent: area,
+            cb: function(old) {
+              return params.callbacks[params.key]({
+                area: area,
+                old: old,
+                key: params.key
+              });
+            }
+          };
+          element.css('width', area.face.width());
+          element.css('height', 130);
+          element.change(function(event) {
+            return _this.dealWithChange(event.target.value);
+          });
+          return element;
+        }
+      }
+    };
+  };
+
+}).call(this);
+
+
+},{}],13:[function(require,module,exports){
+(function() {
+  exports.init = function(area) {
+    area.tools = [];
+    area.toolCt = area.app.draw("<div class=\"toolCt\"></div>", area.container).css('border', "" + area.app.colors.active + " 1px solid").css('background-color', area.app.colors.barelyThere);
+    area.state.tools.forEach(function(toolConfig) {
+      var tool;
+      tool = area.app.exclusiveButton["new"]({
+        name: toolConfig.name,
+        key: 'tool',
+        cssActive: function() {
+          return this.element.css('background-color', area.app.colors.active);
+        },
+        cssInactive: function() {
+          return this.element.css('background-color', area.app.colors.inactive);
+        },
+        container: area.toolCt,
+        coll: area.tools
+      });
+      if (tool.name === 'pen') {
+        return tool.exclusiveOptions = area.state.waveforms;
+      } else {
+        return tool.exclusiveOptions = [];
+      }
+    });
+    area.toolExclusiveOptionsCt = area.app.draw("<div class=\"waveCt\"></div>", area.toolCt).css('border', "" + area.app.colors.active + " 1px solid").css('background-color', area.app.colors.inactive);
+    area.tools.forEach(function(tool) {
+      tool.exclusiveOptionInstances = [];
+      return tool.exclusiveOptions.forEach(function(optionConfig) {
+        var option;
+        option = area.app.exclusiveButton["new"]({
+          name: optionConfig.name,
+          key: 'option',
+          cssActive: function() {
+            return this.element.css("border", "" + area.app.colors.active + " 6px solid");
+          },
+          cssInactive: function() {
+            return this.element.css("border", "none");
+          },
+          container: area.toolExclusiveOptionsCt,
+          coll: tool.exclusiveOptionInstances
+        });
+        return option.element.css('background-color', optionConfig.color).css('color', 'white');
+      });
+    });
+    return area.tools;
+  };
+
+}).call(this);
+
+
+},{}],14:[function(require,module,exports){
+(function() {
+  var draw;
+
+  draw = require('./dom/draw.coffee');
+
+  exports.init = function(area) {
+    var out,
+      _this = this;
+    out = {
+      drawGrids: function() {
+        var fillFuncs;
+        fillFuncs = {
+          x: function(point) {
+            return area.context.fillRect(point, 0, 1, area.state.len);
+          },
+          y: function(point) {
+            return area.context.fillRect(0, area.state.len - point, area.state.len, 1);
+          }
+        };
+        return ['x', 'y'].forEach(function(axis) {
+          var fill, hash;
+          hash = area.gridEquations[axis];
+          if (area.state['gridIsShow_' + axis]) {
+            area.context.fillStyle = area.app.colors.inactive;
+            fill = function(n) {
+              var pos;
+              if ((pos = hash.get(n)) < 1) {
+                fillFuncs[axis](pos * area.state.len);
+                return fill(n + 1);
+              }
+            };
+            return fill(0);
+          }
+        });
+      },
+      setSize: function() {
+        area.face.attr('width', area.state.len);
+        return area.face.attr('height', area.state.len);
+      },
+      drawContainer: function() {
+        this.destroy();
+        return area.container = area.app.draw("<div class=\"area-ct\"></div>");
+      },
+      destroy: function() {
+        if ((area.container != null)) {
+          return area.container.remove();
+        }
+      },
+      drawPlayIndicator: function() {
+        area.playIndicator = {
+          face: draw('<div class="play-indicator"></div>', area.container),
+          setX: function(newVal) {
+            return this.face.css('left', (newVal * area.state.len) + area.box.left).css('top', area.box.top);
+          }
+        };
+        return area.playIndicator.face.css('height', area.state.len).css('left', 0).css('background-color', area.app.colors.active);
+      },
+      drawFace: function() {
+        area.face = draw('<canvas class="area"></canvas><br/>', area.container);
+        return area.context = area.face[0].getContext("2d");
+      },
+      drawUnits: function() {
+        return area.state.units.forEach(function(unit) {
+          return area.app.block.init(unit);
+        });
+      },
+      attachPositionAttributes: function() {
+        var pos;
+        pos = area.face.position();
+        return area.box = {
+          top: pos.top,
+          left: pos.left,
+          right: pos.left + area.face.width(),
+          bottom: pos.top + area.face.height()
+        };
+      }
+    };
+    ['drawContainer', 'drawPlayIndicator', 'drawFace', 'setSize', 'drawUnits', 'drawGrids', 'attachPositionAttributes'].forEach(function(k) {
+      return out[k]();
+    });
+    return out;
+  };
+
+}).call(this);
+
+
+},{"./dom/draw.coffee":15}],16:[function(require,module,exports){
+(function() {
+  var positionLib;
+
+  positionLib = require('./positions/positions.coffee');
+
+  exports.init = function(area) {
+    var out;
+    out = {
+      addUnitCanditate: function(unit) {
+        if (!positionLib.isIn(area.state.units, unit) && !(unit.x === 1) && !(unit.y === 0)) {
+          console.log("New Unit", unit);
+          area.state.units.push(unit);
+          callbacks['units']({
+            area: area
+          });
+          return area.app.block.init(unit);
+        }
+      },
+      mouseInit: function() {
+        var potentiallyMakeNewBlock,
+          _this = this;
+        potentiallyMakeNewBlock = function(mouseState) {
+          var newUnitPos, snappedPoint;
+          if (mouseState["new"].down) {
+            snappedPoint = positionLib.snapToGrid(mouseState["new"].pos, area.state.blockSize * area.state.len);
+            if (newUnitPos = positionLib.isInBox(snappedPoint, area.box)) {
+              ['x', 'y'].forEach(function(axis) {
+                var gridHash;
+                gridHash = area.gridEquations[axis];
+                if (area.state['gridIsSnap_' + axis]) {
+                  return newUnitPos[axis] = positionLib.snapToGridFromEquation(newUnitPos[axis], gridHash.get);
+                }
+              });
+              return _this.addUnitCanditate(newUnitPos);
+            }
+          }
+        };
+        area.mouseCallbacks = {
+          mousemove: function(mouseState) {
+            return potentiallyMakeNewBlock(mouseState);
+          },
+          mousedown: function(mouseState) {
+            return potentiallyMakeNewBlock(mouseState);
+          },
+          mouseup: function(mouseState) {}
+        };
+        return area;
+      }
+    };
+    return out.mouseInit();
+  };
+
+}).call(this);
+
+
+},{"./positions/positions.coffee":17}],18:[function(require,module,exports){
+(function() {
+  var createDepenency;
+
+  createDepenency = function(key, instance, initializeWith) {
+    if (initializeWith == null) {
+      initializeWith = [];
+    }
+    return {
+      key: key,
+      instance: instance,
+      initializeWith: initializeWith
+    };
+  };
+
+  module.exports = function() {
+    return [createDepenency('guiBuilder', require('./sound_paint_gui.coffee')), createDepenency('draw', require('./dom/draw.coffee')), createDepenency('soundHelpers', window.SPhelpers), createDepenency('defaultState', require('./defaults/default_state.coffee')), createDepenency('json', require('./dom/json.coffee')), createDepenency('rootElement', require('./dom/root_element.coffee'), ['app']), createDepenency('colors', require('./color_theme.coffee'), ['app']), createDepenency('gridEquations', require('./positions/grid_equations.coffee'), ['app']), createDepenency('toggleBtn', require('./dom/toggle_btn.coffee'), ['area']), createDepenency('block', require('./block.coffee'), ['area']), createDepenency('areaUnits', require('./area_units.coffee'), ['area']), createDepenency('areaDraw', require('./area_draw.coffee'), ['area']), createDepenency('saveLoad', require('./standard-ui/save_load.coffee'), ['area']), createDepenency('resizer', require('./standard-ui/resizer.coffee'), ['area']), createDepenency('exclusiveButton', require('./standard-ui/exclusive_button.coffee'), ['area']), createDepenency('link', require('./link.coffee'), ['area']), createDepenency('tools', require('./standard-ui/tools.coffee'), ['area']), createDepenency('mouseTracker', require('./mouse_tracker.coffee'), ['area'])];
+  };
+
+}).call(this);
+
+
+},{"./sound_paint_gui.coffee":19,"./dom/draw.coffee":15,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./positions/grid_equations.coffee":8,"./dom/toggle_btn.coffee":6,"./block.coffee":1,"./area_units.coffee":16,"./area_draw.coffee":14,"./standard-ui/save_load.coffee":12,"./standard-ui/resizer.coffee":11,"./standard-ui/exclusive_button.coffee":10,"./link.coffee":20,"./standard-ui/tools.coffee":13,"./mouse_tracker.coffee":21}],20:[function(require,module,exports){
+(function() {
+  var buttons, playSlider, sliderWithMaxAndMin;
+
+  playSlider = require('./standard-ui/play_slider.coffee');
+
+  buttons = require('./standard-ui/buttons.coffee');
+
+  sliderWithMaxAndMin = require('./dom/slider_with_max.coffee');
+
+  exports.getGlobalCallbacks = function() {
+    return window.callbacks;
+  };
+
+  exports.init = function(area) {
+    var btnHash, callbacks, initButtonToSendMessage, playSliderEl, resizerEl, speedSliderEl, stateInput;
+    callbacks = exports.getGlobalCallbacks();
+    btnHash = buttons.init(area);
+    stateInput = area.app.saveLoad.init({
+      key: 'stateInput',
+      callbacks: callbacks
+    });
+    playSliderEl = playSlider.init(area, callbacks);
+    speedSliderEl = sliderWithMaxAndMin.init({
+      parent: area,
+      key: 'bpm'
+    }, callbacks);
+    initButtonToSendMessage = function(name) {
+      return btnHash[name](function(old) {
+        return callbacks[name]({
+          area: area,
+          old: old,
+          key: name
+        });
+      });
+    };
+    area.app._.keys(btnHash).forEach(function(key) {
+      return initButtonToSendMessage(key);
+    });
+    if (area.state.visibleGuiControls.len) {
+      resizerEl = area.app.resizer.init({
+        key: 'areaResize',
+        callbacks: callbacks
+      });
+      return resizerEl;
+    } else {
+      return area;
+    }
+  };
+
+}).call(this);
+
+
+},{"./standard-ui/play_slider.coffee":22,"./standard-ui/buttons.coffee":9,"./dom/slider_with_max.coffee":23}],19:[function(require,module,exports){
+(function() {
+  var app;
+
+  app = require('./dependency_loader.coffee');
+
+  exports.init = function(area) {
+    window.globalArea = area;
+    area.restartGUI = function() {
+      app.newInstance();
+      return exports.init(area);
+    };
+    app.newAreaInstance(area);
+    return area.app.resizer.setToMaximum();
+  };
+
+  exports.initProgram = function() {
+    app.newInstance();
+    return exports.init({
+      rootElement: app.rootElement.draw(),
+      gridEquations: app.gridEquations(),
+      state: app.defaultState
+    });
+  };
+
+  setTimeout(exports.initProgram, 0);
+
+}).call(this);
+
+
+},{"./dependency_loader.coffee":24}],22:[function(require,module,exports){
 (function() {
   var slider;
 
@@ -597,46 +693,44 @@
 }).call(this);
 
 
-},{"../dom/slider.coffee":22}],20:[function(require,module,exports){
+},{"../dom/slider.coffee":25}],24:[function(require,module,exports){
 (function() {
-  var _;
+  var dependencyList, _;
 
   _ = require('lodash');
 
+  dependencyList = require('./dependency_list.coffee');
+
   module.exports = {
-    requireAndInit: function(instance, key) {
-      return this[key] = instance.init(this);
+    requireAndInit: function(dependency) {
+      return this[dependency.key] = dependency.instance.init(this);
     },
     newInstance: function() {
+      var toInitialize,
+        _this = this;
+      toInitialize = {
+        dependencies: dependencyList(),
+        "for": function(typeToInitWith) {
+          return this.dependencies.filter(function(dependency) {
+            if ((dependency.initializeWith != null)) {
+              return _.contains(dependency.initializeWith, typeToInitWith);
+            }
+          });
+        }
+      };
       this._ = _;
       this.$ = require('jquery');
-      _.forEach({
-        rootElement: require('./dom/root_element.coffee'),
-        colors: require('./color_theme.coffee'),
-        mouseTracker: require('./mouse_tracker.coffee'),
-        gridEquations: require('./positions/grid_equations.coffee'),
-        areaDraw: require('./area_draw.coffee'),
-        areaUnits: require('./area_units.coffee'),
-        block: require('./block.coffee'),
-        link: require('./link.coffee'),
-        tools: require('./standard-ui/tools.coffee'),
-        resizer: require('./standard-ui/resizer.coffee'),
-        saveLoad: require('./standard-ui/save_load.coffee'),
-        exclusiveButton: require('./standard-ui/exclusive_button.coffee')
-      }, this.requireAndInit.bind(this));
-      this.guiBuilder = require('./sound_draw_gui.coffee');
-      this.draw = require('./dom/draw.coffee');
-      this.soundHelpers = window.SPhelpers;
-      this.defaultState = require('./defaults/default_state.coffee');
-      this.json = require('./dom/json.coffee');
-      return this.newInstance = function(area) {
+      _.forEach(toInitialize.dependencies, function(dependency) {
+        return _this[dependency.key] = dependency.instance;
+      });
+      _.forEach(toInitialize["for"]('app'), this.requireAndInit.bind(this));
+      return this.newAreaInstance = function(area) {
+        var requireAndInit;
         area.app = _.clone(this);
-        area.app.requireAndInit = function(key) {
-          return this[key] = this[key].init(area);
+        requireAndInit = function(dependency) {
+          return area.app[dependency.key] = area.app[dependency.key].init(area);
         };
-        return ['areaDraw', 'areaUnits', 'block', 'resizer', 'saveLoad', 'link', 'exclusiveButton', 'tools', 'mouseTracker'].forEach(function(key) {
-          return area.app.requireAndInit(key);
-        });
+        return _.forEach(toInitialize["for"]('area'), requireAndInit);
       };
     }
   };
@@ -644,7 +738,7 @@
 }).call(this);
 
 
-},{"./dom/root_element.coffee":5,"./color_theme.coffee":2,"./mouse_tracker.coffee":23,"./positions/grid_equations.coffee":7,"./area_draw.coffee":11,"./area_units.coffee":13,"./block.coffee":1,"./link.coffee":15,"./standard-ui/tools.coffee":10,"./standard-ui/resizer.coffee":24,"./standard-ui/save_load.coffee":9,"./standard-ui/exclusive_button.coffee":8,"./sound_draw_gui.coffee":19,"./dom/draw.coffee":12,"./defaults/default_state.coffee":3,"./dom/json.coffee":4,"lodash":25,"jquery":26}],23:[function(require,module,exports){
+},{"./dependency_list.coffee":18,"lodash":26,"jquery":27}],21:[function(require,module,exports){
 (function() {
   var $, colors, draw, _;
 
@@ -656,67 +750,63 @@
 
   $ = require('jquery');
 
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        var callbacks, copyNewToOld, defaultState, down, size, states;
-        callbacks = area.mouseCallbacks;
-        size = 10;
-        down = false;
-        if ((typeof face !== "undefined" && face !== null)) {
-          face.css('position', 'absolute').css('width', size + 'px').css('height', size + 'px').css('background-color', colors.mouse.inactive);
-        }
-        defaultState = {
-          pos: {
-            x: null,
-            y: null
-          },
-          down: false
-        };
-        states = {
-          "new": _.cloneDeep(defaultState),
-          old: _.cloneDeep(defaultState)
-        };
-        copyNewToOld = function() {
-          return states.old = _.cloneDeep(states["new"]);
-        };
-        return _.each({
-          mousemove: function(event) {
-            copyNewToOld();
-            states["new"].pos.x = event.pageX;
-            states["new"].pos.y = event.pageY;
-            if ((typeof face !== "undefined" && face !== null)) {
-              face.css('top', event.pageY + 'px').css('left', event.pageX + 'px');
-            }
-            return callbacks.mousemove(states);
-          },
-          mousedown: function(event) {
-            copyNewToOld();
-            states["new"].down = true;
-            if ((typeof face !== "undefined" && face !== null)) {
-              face.css('background-color', colors.active);
-            }
-            return callbacks.mousedown(states);
-          },
-          mouseup: function(event) {
-            copyNewToOld();
-            states["new"].down = false;
-            if ((typeof face !== "undefined" && face !== null)) {
-              face.css('background-color', colors.mouse.inactive);
-            }
-            return callbacks.mouseup(states);
-          }
-        }, function(val, key) {
-          return $("html")[key](val);
-        });
-      }
+  exports.init = function(area) {
+    var callbacks, copyNewToOld, defaultState, down, size, states;
+    callbacks = area.mouseCallbacks;
+    size = 10;
+    down = false;
+    if ((typeof face !== "undefined" && face !== null)) {
+      face.css('position', 'absolute').css('width', size + 'px').css('height', size + 'px').css('background-color', colors.mouse.inactive);
+    }
+    defaultState = {
+      pos: {
+        x: null,
+        y: null
+      },
+      down: false
     };
+    states = {
+      "new": _.cloneDeep(defaultState),
+      old: _.cloneDeep(defaultState)
+    };
+    copyNewToOld = function() {
+      return states.old = _.cloneDeep(states["new"]);
+    };
+    return _.each({
+      mousemove: function(event) {
+        copyNewToOld();
+        states["new"].pos.x = event.pageX;
+        states["new"].pos.y = event.pageY;
+        if ((typeof face !== "undefined" && face !== null)) {
+          face.css('top', event.pageY + 'px').css('left', event.pageX + 'px');
+        }
+        return callbacks.mousemove(states);
+      },
+      mousedown: function(event) {
+        copyNewToOld();
+        states["new"].down = true;
+        if ((typeof face !== "undefined" && face !== null)) {
+          face.css('background-color', colors.active);
+        }
+        return callbacks.mousedown(states);
+      },
+      mouseup: function(event) {
+        copyNewToOld();
+        states["new"].down = false;
+        if ((typeof face !== "undefined" && face !== null)) {
+          face.css('background-color', colors.mouse.inactive);
+        }
+        return callbacks.mouseup(states);
+      }
+    }, function(val, key) {
+      return $("html")[key](val);
+    });
   };
 
 }).call(this);
 
 
-},{"./color_theme.coffee":2,"./dom/draw.coffee":12,"lodash":25,"jquery":26}],25:[function(require,module,exports){
+},{"./color_theme.coffee":2,"./dom/draw.coffee":15,"lodash":26,"jquery":27}],26:[function(require,module,exports){
 (function(global){/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -7504,7 +7594,7 @@
 }.call(this));
 
 })(window)
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v2.1.0
  * http://jquery.com/
@@ -16618,48 +16708,7 @@ return jQuery;
 }));
 
 })()
-},{}],21:[function(require,module,exports){
-(function() {
-  var colors, draw, size, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  colors = require('../color_theme.coffee');
-
-  size = 30;
-
-  exports.init = function(params) {
-    var btn, set;
-    btn = draw("<div id=\"" + params.id + "\">" + params.inner + "</div>", params.parent.container);
-    btn.css('height', size);
-    btn.addClass('btn');
-    set = function(v) {
-      var old;
-      if (params.parent.state[params.key] !== v) {
-        old = params.parent.state[params.key];
-        params.parent.state[params.key] = v;
-        params.cb(old);
-      }
-      if (params.parent.state[params.key]) {
-        btn.addClass('btn-on');
-        return btn.css('background-color', colors.active);
-      } else {
-        btn.addClass('btn-off');
-        return btn.css('background-color', colors.inactive);
-      }
-    };
-    set(params.parent.state[params.key]);
-    return btn.click(function() {
-      return set(!params.parent.state[params.key]);
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":12,"../color_theme.coffee":2,"jquery-ui":27}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function() {
   var $, ui;
 
@@ -16684,7 +16733,7 @@ return jQuery;
 }).call(this);
 
 
-},{"jquery":26,"jquery-ui":27}],22:[function(require,module,exports){
+},{"jquery":27,"jquery-ui":28}],25:[function(require,module,exports){
 (function() {
   var draw, ui;
 
@@ -16723,28 +16772,7 @@ return jQuery;
 }).call(this);
 
 
-},{"./draw.coffee":12,"jquery-ui":27}],18:[function(require,module,exports){
-(function() {
-  var draw, slider, ui;
-
-  ui = require('jquery-ui');
-
-  draw = require('./draw.coffee');
-
-  slider = require('./slider.coffee');
-
-  exports.init = function(params, callbacks) {
-    var element, max;
-    max = 200;
-    return element = slider.init(params, callbacks, {
-      max: max
-    });
-  };
-
-}).call(this);
-
-
-},{"./draw.coffee":12,"./slider.coffee":22,"jquery-ui":27}],14:[function(require,module,exports){
+},{"./draw.coffee":15,"jquery-ui":28}],17:[function(require,module,exports){
 (function() {
   var _;
 
@@ -16805,78 +16833,28 @@ return jQuery;
 }).call(this);
 
 
-},{"lodash":25}],24:[function(require,module,exports){
+},{"lodash":26}],23:[function(require,module,exports){
 (function() {
-  var $, BOTTOM_CONTROL_SIZE, RIGHT_CONTROL_SIZE, draw, ui;
-
-  $ = require('jquery');
+  var draw, slider, ui;
 
   ui = require('jquery-ui');
 
-  draw = require('../dom/draw.coffee');
+  draw = require('./draw.coffee');
 
-  BOTTOM_CONTROL_SIZE = 280;
+  slider = require('./slider.coffee');
 
-  RIGHT_CONTROL_SIZE = 20;
-
-  exports.init = function(app) {
-    return {
-      init: function(area) {
-        var out;
-        out = {
-          setToMaximum: function() {
-            var largest, root;
-            if (area.state.visibleGuiControls.len) {
-              largest = Math.min((root = area.rootElement).width() - RIGHT_CONTROL_SIZE, root.height() - BOTTOM_CONTROL_SIZE);
-              if (area.state['len'] !== largest) {
-                area.resizerElement.val(largest);
-                return this.dealWithChange(largest);
-              }
-            }
-          },
-          dealWithChange: function(val) {
-            var old;
-            old = area.state['len'];
-            area.state['len'] = parseInt(val);
-            area.resizerElement.params.cb(old);
-            return area.restartGUI();
-          },
-          init: function(params) {
-            var element, elementMaximize,
-              _this = this;
-            element = draw("<input type=\"number\" class=\"resize\">", area.container);
-            area.resizerElement = element;
-            elementMaximize = draw("<div class=\"btn maximize-size ui-icon ui-icon-arrow-4-diag\"></div>", area.container);
-            element.val(area.state['len']);
-            element.css('width', 46);
-            element.params = {
-              parent: area,
-              cb: function(old) {
-                return params.callbacks[params.key]({
-                  area: area,
-                  old: old,
-                  key: params.key
-                });
-              }
-            };
-            elementMaximize.click(function() {
-              return _this.setToMaximum();
-            });
-            element.change(function(event) {
-              return _this.dealWithChange(event.target.value);
-            });
-            return element;
-          }
-        };
-        return out;
-      }
-    };
+  exports.init = function(params, callbacks) {
+    var element, max;
+    max = 200;
+    return element = slider.init(params, callbacks, {
+      max: max
+    });
   };
 
 }).call(this);
 
 
-},{"../dom/draw.coffee":12,"jquery":26,"jquery-ui":27}],27:[function(require,module,exports){
+},{"./draw.coffee":15,"./slider.coffee":25,"jquery-ui":28}],28:[function(require,module,exports){
 (function(){var jQuery = require('jquery');
 
 /*! jQuery UI - v1.10.3 - 2013-05-03
@@ -31884,5 +31862,5 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 })()
-},{"jquery":26}]},{},[20,11,13,1,2,3,21,12,4,5,22,18,15,6,23,7,14,19,17,8,16,24,9,10])
+},{"jquery":27}]},{},[14,16,1,2,3,18,24,15,4,5,25,23,6,20,7,21,8,17,19,9,10,22,11,12,13])
 ;
