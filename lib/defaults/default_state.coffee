@@ -9,10 +9,10 @@
         }`
 
 module.exports = {
-    len: 300,
-    blockSize: 0.02,
+    len: 850,
+    blockSize: 0.005,
     playSlider: 0.09,
-    bpm: 6,
+    bpm: 1,
     isPlaying: true,
     isLooping: false,
 
@@ -35,23 +35,23 @@ module.exports = {
     gridIsShow_y: true,
     
     units: [
-      {
-      "x": 0.1,
-      "y": 0.07749843267518128,
-      "waveName": "sin"
-      },
-      {
-        "x": 0.14,
-        "y": 0.10154068089173789,
-        "waveName": "sin"
-      }
+      # {
+      # "x": 0.1,
+      # "y": 0.07749843267518128,
+      # "waveName": "sin"
+      # },
+      # {
+      #   "x": 0.14,
+      #   "y": 0.10154068089173789,
+      #   "waveName": "sin"
+      # }
     ],
     tools: [
       {name: 'pen'} 
       {name: 'waveforms'}
     ],
     toolActive: 'pen',
-    optionActive: 'sin',
+    optionActive: 'sqr',
     waveforms: [
       {
         name: 'sin',
