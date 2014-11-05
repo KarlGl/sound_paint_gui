@@ -1,16 +1,8 @@
-Tools: ->
-  pencil : for drawing new units in the area. Can choose a brush, which can be from the brushes you have made.
-  earaser : for removing units.
-  color pallet : for creating a custom waveform to add to your brushes
+==Demo==
+View the demo! http://karlgl.github.io/sound_paint_gui/
 
+==Development==
+use the development.html for testing
 
-|pencil|
-    |brush list|
-        name: sin
-        waveform:
-          # function for setting frequncy
-          # or just a table for custom waveforms
-          setF: (f)->
-
-
+Draw a picture then listen to what it sounds like in your browser!
 
